@@ -1,13 +1,14 @@
 package com.sis.student.api;
 
-import java.util.List; // This fix the red List error
+import com.sis.student.model.Course;
+import com.sis.student.model.Transcript;
+import java.util.List;
 
 public interface StudentServiceAPI {
-    // API-style signatures based on instructor feedback
-    List<Object> viewAvailableCourses();
-    List<Object> searchCourses(String query);
+    List<Course> viewAvailableCourses();
+    List<Course> searchCourses(String query);
     String addCourse(Long studentId, Long courseId);
     String dropCourse(Long studentId, Long courseId);
-    Object viewTranscript(Long studentId);
-    Object viewCourseDetails(Long courseId);
+    Transcript viewTranscript(Long studentId);
+    Course viewCourseDetails(Long courseId);
 }
