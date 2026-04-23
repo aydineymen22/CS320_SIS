@@ -19,8 +19,16 @@ public class StudentService implements StudentServiceAPI {
 
     @Override
     public List<Course> searchCourses(String query) {
-        // Logic for searching will go here
-        return new ArrayList<>();
+        List<Course> foundCourses = new ArrayList<>();
+
+        for (Course course : mockCourseDatabase) {
+            // Simple case-insensitive search logic
+            if (course.getCourseName().toLowerCase().contains(query.toLowerCase()) ||
+                    course.getCourseCode().toLowerCase().contains(query.toLowerCase())) {
+                foundCourses.add(course);
+            }
+        }
+        return foundCourses;
     }
 
     @Override
