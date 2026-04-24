@@ -1,6 +1,7 @@
 package com.sis.student.service;
 
 import com.sis.student.model.Course;
+import com.sis.student.model.Transcript;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
@@ -58,6 +59,31 @@ public class StudentServiceTest {
         // 3. Assert: Verify success message and that quota returned to 5
         assertEquals("Successfully dropped CS101", result);
         assertEquals(5, studentService.viewAvailableCourses().get(1).getQuota());
+    }
+
+    @Test
+    void testViewTranscript_ShouldReturnStudentRecords() {
+        // 1. Arrange: Enroll the student in a course first
+        studentService.addCourse(1L, 102L);
+
+        // 2. Act: Retrieve the transcript
+        Transcript transcript = studentService.viewTranscript(1L);
+
+        // 3. Assert: Verify the transcript contains the correct course
+        assertNotNull(transcript);
+        assertEquals(1, transcript.getCourses().size());
+        assertEquals("CS101", transcript.getCourses().get(0).getCourseCode());
+    }
+
+    @Test
+    void testViewCourseDetails_ShouldReturnCorrectCourse() {
+        // 1. Act: Request details for existing course 101
+        Course details = studentService.viewCourseDetails(101L);
+
+        // 2. Assert: Verify the returned object matches the expected course
+        assertNotNull(details);
+        assertEquals("CS320", details.getCourseCode());
+        assertEquals("Software Engineering", details.getCourseName());
     }
 
 

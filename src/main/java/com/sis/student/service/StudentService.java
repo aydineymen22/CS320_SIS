@@ -4,13 +4,16 @@ import com.sis.student.api.StudentServiceAPI;
 import com.sis.student.model.Course;
 import com.sis.student.model.Transcript;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class StudentService implements StudentServiceAPI {
 
     // These would normally come from a Database (Repository Layer)
     // For now, we use an empty list as a placeholder
     private List<Course> mockCourseDatabase = new ArrayList<>();
+    private Map<Long, List<Course>> enrollmentStorage = new HashMap<>();
 
     private Course findCourseById(Long courseId) {
         for (Course c : mockCourseDatabase) {
@@ -45,12 +48,12 @@ public class StudentService implements StudentServiceAPI {
     public String addCourse(Long studentId, Long courseId) {
         Course course = findCourseById(courseId);
         if (course == null) return "Error: Course not found.";
+        if (course.getQuota() <= 0) return "Error: Course Quota Full.";
 
-        if (course.getQuota() <= 0) {
-            return "Error: Course Quota Full.";
-        }
-
+        // Logic: Update quota and store enrollment
         course.setQuota(course.getQuota() - 1);
+        enrollmentStorage.computeIfAbsent(studentId, k -> new ArrayList<>()).add(course);
+
         return "Successfully enrolled in " + course.getCourseName();
     }
 
@@ -65,11 +68,15 @@ public class StudentService implements StudentServiceAPI {
 
     @Override
     public Transcript viewTranscript(Long studentId) {
-        return null;
+        List<Course> studentCourses = enrollmentStorage.getOrDefault(studentId, new ArrayList<>());
+
+        // In a real system, grades would come from a GradeRepository
+        // For now, we return a transcript with the courses and empty grades
+        return new Transcript(studentId, studentCourses, new HashMap<>());
     }
 
     @Override
     public Course viewCourseDetails(Long courseId) {
-        return null;
+        return findCourseById(courseId);
     }
 }
