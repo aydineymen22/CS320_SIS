@@ -47,4 +47,18 @@ public class StudentServiceTest {
         assertEquals("Software Engineering", results.get(0).getCourseName());
     }
 
+    @Test
+    void testDropCourse_ShouldIncreaseQuota() {
+        // 1. Arrange: Ensure a course has been "joined" first
+        studentService.addCourse(1L, 102L); // Starting quota was 5, now 4
+
+        // 2. Act: Drop the course
+        String result = studentService.dropCourse(1L, 102L);
+
+        // 3. Assert: Verify success message and that quota returned to 5
+        assertEquals("Successfully dropped CS101", result);
+        assertEquals(5, studentService.viewAvailableCourses().get(1).getQuota());
+    }
+
+
 }
