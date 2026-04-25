@@ -2,6 +2,7 @@ package com.sis.student.controller;
 
 import com.sis.student.api.StudentServiceAPI;
 import com.sis.student.model.Course;
+import com.sis.student.model.Transcript; // Make sure this import is here
 import java.util.List;
 
 public class StudentController {
@@ -9,6 +10,16 @@ public class StudentController {
 
     public StudentController(StudentServiceAPI studentService) {
         this.studentService = studentService;
+    }
+
+
+    public List<Course> getAvailableCourses() {
+        return studentService.viewAvailableCourses();
+    }
+
+    public Transcript getTranscript(Long studentId) {
+        if (studentId == null) return null;
+        return studentService.viewTranscript(studentId);
     }
 
     public String enrollInCourse(Long studentId, Long courseId) {
@@ -20,7 +31,7 @@ public class StudentController {
 
     public List<Course> search(String query) {
         if (query == null || query.trim().isEmpty()) {
-            return studentService.viewAvailableCourses();
+            return getAvailableCourses();
         }
         return studentService.searchCourses(query);
     }
