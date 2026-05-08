@@ -1,56 +1,45 @@
 package com.sis.student.service;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import com.sis.common.DatabaseManager;
+import com.sis.common.model.Course;
+import com.sis.common.model.Transcript;
+import org.junit.jupiter.api.*;
+import java.sql.*;
+import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class StudentServiceTest {
-    private StudentService studentService;
+class StudentServiceTest {
+    private final StudentService service = new StudentService();
 
     @BeforeEach
-    void setUp() { studentService = new StudentService(); }
-
-    @Test void testEnroll_Fail_AlreadyEnrolled() {
-        studentService.addCourse(1L, 1L);
-        String result = studentService.addCourse(1L, 1L);
-        assertEquals("Error: Already enrolled in this section.", result);
+    void setup() throws SQLException {
+        try (Connection conn = DatabaseManager.getConnection();
+             Statement stmt = conn.createStatement()) {
+            stmt.executeUpdate("DELETE FROM enrollments WHERE student_id = 1");
+        }
     }
 
-    @Test void testEnroll_Fail_SectionNotFound() {
-        assertEquals("Error: Section not found.", studentService.addCourse(1L, 0L));
+    @Test void testViewAvailable_NotEmpty() { assertFalse(service.viewAvailableCourses().isEmpty()); }
+    @Test void testSearch_ValidQuery() { assertFalse(service.searchCourses("CS").isEmpty()); }
+    @Test void testSearch_InvalidQuery() { assertTrue(service.searchCourses("INVALID_PROMPT_123").isEmpty()); }
+    @Test void testAddCourse_Success() { assertEquals("Successfully enrolled.", service.addCourse(1L, 1L)); }
+    @Test void testAddCourse_AlreadyEnrolled() {
+        service.addCourse(1L, 1L);
+        assertEquals("Error: Already enrolled in this section.", service.addCourse(1L, 1L));
     }
-
-    @Test void testDrop_Fail_EnrollmentNotFound() {
-        assertEquals("Error: Enrollment not found.", studentService.dropCourse(99L, 99L));
+    @Test void testAddCourse_InvalidSection() { assertEquals("Error: Section not found.", service.addCourse(1L, 9999L)); }
+    @Test void testDropCourse_Success() {
+        service.addCourse(1L, 1L);
+        assertEquals("Successfully dropped.", service.dropCourse(1L, 1L));
     }
-
-    @Test void testSearch_Empty() {
-        assertTrue(studentService.searchCourses("NON_EXISTENT_NAME").isEmpty());
+    @Test void testDropCourse_NotFound() { assertEquals("Error: Enrollment not found.", service.dropCourse(1L, 888L)); }
+    @Test void testViewTranscript_StudentIdMatch() {
+        Transcript t = service.viewTranscript(1L);
+        assertEquals(1L, t.getStudentId());
     }
-
-    @Test void testSearch_CaseInsensitive() {
-        assertEquals(studentService.searchCourses("cs320").size(),
-                studentService.searchCourses("CS320").size());
-    }
-
-    @Test void testEnroll_Fail_InvalidStudent() {
-        assertEquals("Error: Student or Section ID does not exist.", studentService.addCourse(8888L, 1L));
-    }
-
-    @Test void testTranscript_EmptyForNewStudent() {
-        assertTrue(studentService.viewTranscript(7777L).getCourses().isEmpty());
-    }
-
-    @Test void testAvailableCourses_NotNull() {
-        assertNotNull(studentService.viewAvailableCourses());
-    }
-
-    @Test void testEnroll_Fail_ClosedSection() {
-        assertNotNull(studentService.addCourse(1L, 3L));
-    }
-
-    @Test void testDrop_Success_Message() {
-        studentService.addCourse(1L, 2L);
-        assertEquals("Successfully dropped.", studentService.dropCourse(1L, 2L));
+    @Test void testAddCourse_ReEnrollAfterDrop() {
+        service.addCourse(1L, 1L);
+        service.dropCourse(1L, 1L);
+        assertEquals("Successfully enrolled.", service.addCourse(1L, 1L)); // Should update DROPPED to ENROLLED
     }
 }

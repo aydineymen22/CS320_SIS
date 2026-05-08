@@ -1,7 +1,7 @@
 package com.sis.student.service;
 
-import com.sis.student.model.Course;
-import com.sis.student.model.Transcript;
+import com.sis.common.model.Course;
+import com.sis.common.model.Transcript;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import java.util.List;

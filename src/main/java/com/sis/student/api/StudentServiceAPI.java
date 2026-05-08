@@ -1,7 +1,7 @@
 package com.sis.student.api;
 
-import com.sis.student.model.Course;
-import com.sis.student.model.Transcript;
+import com.sis.common.model.Course;
+import com.sis.common.model.Transcript;
 import java.util.List;
 
 public interface StudentServiceAPI {
