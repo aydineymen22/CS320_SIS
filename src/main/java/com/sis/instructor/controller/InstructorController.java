@@ -1,6 +1,7 @@
 package com.sis.instructor.controller;
 
 import com.sis.instructor.api.InstructorInterface;
+import com.sis.instructor.model.RosterStudent;
 import com.sis.instructor.service.GradeService;
 import com.sis.instructor.service.RosterService;
 import com.sis.instructor.service.SyllabusService;
@@ -30,7 +31,7 @@ public class InstructorController implements InstructorInterface {
     }
 
     @Override
-    public List<String> viewRoster(Long instructorId, Long courseId) {
+    public List<RosterStudent> viewRoster(Long instructorId, Long courseId) {
         if (instructorId == null || courseId == null) {
             return List.of();
         }
