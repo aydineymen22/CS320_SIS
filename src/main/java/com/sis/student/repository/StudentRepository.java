@@ -69,4 +69,30 @@ public class StudentRepository {
         ps.setLong(1, studentId);
         return ps.executeQuery();
     }
+    public List<Course> findEnrolledCourses(Long studentId) throws SQLException {
+        List<Course> myCourses = new ArrayList<>();
+        String sql = "SELECT v.* FROM course_listing_view v " +
+                "JOIN enrollments e ON v.section_id = e.section_id " +
+                "WHERE e.student_id = ? AND e.status = 'ENROLLED'";
+
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, studentId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                myCourses.add(new Course(
+                        rs.getLong("section_id"),
+                        rs.getString("course_code"),
+                        rs.getString("course_name"),
+                        rs.getString("section_no"),
+                        rs.getString("term_name"),
+                        rs.getInt("available_quota"),
+                        rs.getString("instructor_name")
+                ));
+            }
+        }
+        return myCourses;
+    }
+
+
 }

@@ -7,47 +7,72 @@ import java.sql.*;
 import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class StudentRepositoryTest {
-    private final StudentRepository repository = new StudentRepository();
+    private final StudentRepository repo = new StudentRepository();
 
     @BeforeEach
-    void clean() throws SQLException {
+    void cleanup() throws SQLException {
+        // Clear all possible test rows for both test students
         try (Connection conn = DatabaseManager.getConnection();
              Statement stmt = conn.createStatement()) {
-            stmt.executeUpdate("DELETE FROM enrollments WHERE student_id = 1 AND section_id = 1");
+            stmt.executeUpdate("DELETE FROM enrollments WHERE student_id IN (1, 2)");
         }
     }
 
-    @Test @Order(1) void testFindCourses_NotNull() throws SQLException { assertNotNull(repository.findCourses("")); }
-    @Test @Order(2) void testFindCourses_SearchMatch() throws SQLException {
-        List<Course> res = repository.findCourses("CS");
-        assertTrue(res.stream().anyMatch(c -> c.getCourseCode().contains("CS")));
+    @Test void testFindCourses_NotNull() throws SQLException { assertNotNull(repo.findCourses("")); }
+
+    @Test void testFindCourses_CS320_DataIntegrity() throws SQLException {
+        List<Course> results = repo.findCourses("CS320");
+        assertTrue(results.stream().anyMatch(c -> c.getCourseCode().equals("CS320")));
     }
-    @Test @Order(3) void testFindCourses_EmptyOnNoMatch() throws SQLException { assertTrue(repository.findCourses("NON_EXISTENT").isEmpty()); }
-    @Test @Order(4) void testInsertEnrollment_Success() throws SQLException {
-        repository.insertEnrollment(1L, 1L);
-        assertEquals("ENROLLED", repository.getEnrollmentStatus(1L, 1L));
+
+    @Test void testGetStatus_ReturnsNullForNewRecord() throws SQLException {
+        assertNull(repo.getEnrollmentStatus(1L, 99L));
     }
-    @Test @Order(5) void testGetEnrollmentStatus_NullForNew() throws SQLException { assertNull(repository.getEnrollmentStatus(1L, 999L)); }
-    @Test @Order(6) void testUpdateStatus_ToDropped() throws SQLException {
-        repository.insertEnrollment(1L, 1L);
-        repository.updateEnrollmentStatus(1L, 1L, "DROPPED");
-        assertEquals("DROPPED", repository.getEnrollmentStatus(1L, 1L));
+
+    @Test void testInsertEnrollment_PersistenceCheck() throws SQLException {
+        repo.insertEnrollment(1L, 1L);
+        assertEquals("ENROLLED", repo.getEnrollmentStatus(1L, 1L));
     }
-    @Test @Order(7) void testUpdateStatus_ToEnrolled() throws SQLException {
-        repository.insertEnrollment(1L, 1L);
-        repository.updateEnrollmentStatus(1L, 1L, "ENROLLED");
-        assertEquals("ENROLLED", repository.getEnrollmentStatus(1L, 1L));
+
+    @Test void testUpdateStatus_ToDropped() throws SQLException {
+        // This was failing; now it has a clean slate
+        repo.insertEnrollment(2L, 2L);
+        repo.updateEnrollmentStatus(2L, 2L, "DROPPED");
+        assertEquals("DROPPED", repo.getEnrollmentStatus(2L, 2L));
     }
-    @Test @Order(8) void testTranscriptData_NotNull() throws SQLException { assertNotNull(repository.getTranscriptData(1L)); }
-    @Test @Order(9) void testTranscriptData_ResultSize() throws SQLException {
-        ResultSet rs = repository.getTranscriptData(1L);
-        assertNotNull(rs);
+
+    @Test void testFindEnrolled_MappingCorrectness() throws SQLException {
+        repo.insertEnrollment(1L, 1L);
+        assertFalse(repo.findEnrolledCourses(1L).isEmpty());
     }
-    @Test @Order(10) void testDatabaseConnection() throws SQLException {
-        try (Connection conn = DatabaseManager.getConnection()) {
-            assertFalse(conn.isClosed());
+
+    @Test void testTranscript_ResultSetIsTraversable() throws SQLException {
+        try (ResultSet rs = repo.getTranscriptData(1L)) {
+            assertNotNull(rs);
+            assertFalse(rs.isClosed());
         }
+    }
+
+    @Test void testQuota_PositiveValue() throws SQLException {
+        assertTrue(repo.findCourses("").get(0).getAvailableQuota() >= 0);
+    }
+
+    @Test void testSection_NotNullStrings() throws SQLException {
+        assertNotNull(repo.findCourses("").get(0).getSectionNo());
+    }
+
+    @Test void testSearch_InvalidQueryReturnsEmpty() throws SQLException {
+        assertTrue(repo.findCourses("XYZ_NON_EXISTENT_99").isEmpty());
+    }
+
+    @Test void testDatabase_IsConnectivityValid() throws SQLException {
+        try (Connection conn = DatabaseManager.getConnection()) {
+            assertTrue(conn.isValid(1));
+        }
+    }
+
+    @Test void testInstructor_NamePresentInView() throws SQLException {
+        assertNotNull(repo.findCourses("").get(0).getInstructorName());
     }
 }

@@ -1,11 +1,14 @@
 package com.sis.student.controller;
 
+import com.sis.common.model.Course;
 import com.sis.student.service.StudentService;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.util.List;
 
 @WebServlet("/api/student-action")
 public class StudentController extends HttpServlet {
@@ -14,34 +17,55 @@ public class StudentController extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        String action = req.getParameter("action");
-        String sIdRaw = req.getParameter("studentId");
-        String secIdRaw = req.getParameter("sectionId");
-
-        if (sIdRaw == null || secIdRaw == null || action == null) {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            resp.getWriter().write("Error: Missing parameters.");
+        HttpSession session = req.getSession(false);
+        if (session == null || !"STUDENT".equals(session.getAttribute("role"))) {
+            resp.sendError(403, "Unauthorized");
             return;
         }
 
-        try {
-            Long studentId = Long.parseLong(sIdRaw);
-            Long sectionId = Long.parseLong(secIdRaw);
-            String result;
+        Long studentId = (Long) session.getAttribute("userId"); // SECURE ID
+        Long sectionId = Long.parseLong(req.getParameter("sectionId"));
+        String action = req.getParameter("action");
 
-            if ("enroll".equals(action)) {
-                result = studentService.addCourse(studentId, sectionId);
-            } else if ("drop".equals(action)) {
-                result = studentService.dropCourse(studentId, sectionId);
-            } else {
-                result = "Error: Invalid action.";
-            }
+        String result = "enroll".equals(action) ?
+                studentService.addCourse(studentId, sectionId) :
+                studentService.dropCourse(studentId, sectionId);
 
-            resp.setContentType("text/plain");
-            resp.getWriter().write(result);
+        resp.getWriter().write(result);
+    }
 
-        } catch (NumberFormatException e) {
-            resp.getWriter().write("Error: IDs must be numeric.");
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        HttpSession session = req.getSession(false);
+        Long studentId = (Long) session.getAttribute("userId");
+        String action = req.getParameter("action");
+
+        resp.setContentType("application/json");
+        String jsonResponse = "[]";
+
+        if ("getSchedule".equals(action)) {
+            List<Course> myCourses = studentService.getMySchedule(studentId);
+            jsonResponse = convertListToJson(myCourses);
+        } else if ("search".equals(action)) {
+            String query = req.getParameter("query");
+            List<Course> results = studentService.searchCourses(query);
+            jsonResponse = convertListToJson(results);
         }
+
+        resp.getWriter().write(jsonResponse);
+    }
+
+    private String convertListToJson(List<Course> courses) {
+        StringBuilder sb = new StringBuilder("[");
+        for (int i = 0; i < courses.size(); i++) {
+            Course c = courses.get(i);
+            sb.append(String.format(
+                    "{\"sectionId\":%d, \"courseCode\":\"%s\", \"courseName\":\"%s\", \"availableQuota\":%d, \"instructorName\":\"%s\"}",
+                    c.getSectionId(), c.getCourseCode(), c.getCourseName(), c.getAvailableQuota(), c.getInstructorName()
+            ));
+            if (i < courses.size() - 1) sb.append(",");
+        }
+        sb.append("]");
+        return sb.toString();
     }
 }

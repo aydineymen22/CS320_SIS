@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Student Portal | Dashboard</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 40px; background-color: #f4f7f6; }
+        .container { max-width: 900px; margin: auto; }
+        .box { background: white; padding: 25px; margin-bottom: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h2 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #eee; }
+        th { background-color: #f8f9fa; color: #7f8c8d; }
+        input[type="text"] { width: 70%; padding: 10px; border-radius: 5px; border: 1px solid #ddd; }
+        button { padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; transition: 0.3s; }
+        .btn-enroll { background-color: #27ae60; color: white; }
+        .btn-drop { background-color: #e74c3c; color: white; }
+        .status-msg { margin-top: 10px; font-weight: bold; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Welcome, Student Portal</h1>
+
+    <div class="box">
+        <h2>Course Search & Registration</h2>
+        <p>Type a course code (e.g., CS320) to find available sections.</p>
+        <input type="text" id="searchInput" placeholder="Search by Course Code or Name...">
+        <button onclick="searchCourses()" style="background-color: #3498db; color: white;">Search</button>
+        <div id="searchFeedback" class="status-msg"></div>
+
+        <table id="searchTable" style="display:none;">
+            <thead>
+            <tr>
+                <th>Code</th>
+                <th>Course Name</th>
+                <th>Quota</th>
+                <th>Action</th>
+            </tr>
+            </thead>
+            <tbody id="searchResults"></tbody>
+        </table>
+    </div>
+
+    <div class="box">
+        <h2>My Current Schedule</h2>
+        <table id="scheduleTable">
+            <thead>
+            <tr>
+                <th>Code</th>
+                <th>Course Name</th>
+                <th>Instructor</th>
+                <th>Action</th>
+            </tr>
+            </thead>
+            <tbody id="myScheduleRows"></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    window.onload = function() {
+        console.log("Dashboard Loaded. Initializing schedule...");
+        loadMySchedule();
+    };
+
+    function searchCourses() {
+        const queryInput = document.getElementById('searchInput');
+        const resultsTable = document.getElementById('searchTable');
+        const resultsBody = document.getElementById('searchResults');
+        const feedback = document.getElementById('searchFeedback');
+
+        if (!queryInput) return;
+        const query = queryInput.value;
+
+        feedback.innerText = "Searching...";
+
+        fetch(`api/student-action?action=search&query=${encodeURIComponent(query)}`)
+            .then(res => {
+                if (!res.ok) throw new Error("Server error");
+                return res.json();
+            })
+            .then(courses => {
+                resultsBody.innerHTML = "";
+                if (!courses || courses.length === 0) {
+                    feedback.innerText = "No courses found matching '" + query + "'";
+                    resultsTable.style.display = "none";
+                    return;
+                }
+                feedback.innerText = "";
+                resultsTable.style.display = "table";
+
+                courses.forEach(c => {
+                    resultsBody.innerHTML += `
+                        <tr>
+                            <td>${c.courseCode}</td>
+                            <td>${c.courseName}</td>
+                            <td>${c.availableQuota}</td>
+                            <td><button class="btn-enroll" onclick="manageCourse('enroll', ${c.sectionId})">Enroll</button></td>
+                        </tr>`;
+                });
+            })
+            .catch(err => {
+                console.error(err);
+                feedback.innerText = "Error connecting to server.";
+            });
+    }
+
+    function loadMySchedule() {
+        const scheduleBody = document.getElementById('myScheduleRows');
+        fetch('api/student-action?action=getSchedule')
+            .then(res => res.json())
+            .then(courses => {
+                scheduleBody.innerHTML = "";
+                if (!courses || courses.length === 0) {
+                    scheduleBody.innerHTML = "<tr><td colspan='4'>No courses in your schedule.</td></tr>";
+                    return;
+                }
+                courses.forEach(c => {
+                    scheduleBody.innerHTML += `
+                        <tr>
+                            <td>${c.courseCode}</td>
+                            <td>${c.courseName}</td>
+                            <td>${c.instructorName || 'TBA'}</td>
+                            <td><button class="btn-drop" onclick="manageCourse('drop', ${c.sectionId})">Drop</button></td>
+                        </tr>`;
+                });
+            })
+            .catch(err => console.error("Schedule Load Error:", err));
+    }
+
+    function manageCourse(actionType, sectionId) {
+        const params = new URLSearchParams();
+        params.append('action', actionType);
+        params.append('sectionId', sectionId);
+
+        fetch('api/student-action', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: params.toString()
+        })
+            .then(res => res.text())
+            .then(msg => {
+                alert(msg);
+                loadMySchedule();
+                searchCourses();
+            })
+            .catch(err => {
+                console.error("Management Error:", err);
+                alert("Action failed. Check console.");
+            });
+    }
+</script>
+</body>
+</html>

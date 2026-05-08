@@ -1,32 +1,14 @@
 package com.sis.student.service;
 
-import com.sis.student.api.StudentServiceAPI;
-import com.sis.student.repository.StudentRepository;
 import com.sis.common.model.Course;
 import com.sis.common.model.Transcript;
-import java.sql.ResultSet;
+import com.sis.student.repository.StudentRepository;
 import java.sql.SQLException;
 import java.util.List;
 
-public class StudentService implements StudentServiceAPI {
+public class StudentService {
     private final StudentRepository repository = new StudentRepository();
 
-    @Override
-    public List<Course> viewAvailableCourses() {
-        return searchCourses("");
-    }
-
-    @Override
-    public List<Course> searchCourses(String query) {
-        try {
-            return repository.findCourses(query);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return List.of();
-        }
-    }
-
-    @Override
     public String addCourse(Long studentId, Long sectionId) {
         try {
             List<Course> all = repository.findCourses("");
@@ -34,48 +16,64 @@ public class StudentService implements StudentServiceAPI {
                     .filter(c -> c.getSectionId().equals(sectionId))
                     .findFirst().orElse(null);
 
-            if (target == null) return "Error: Section not found.";
+            if (target == null) return "Error: Course not found.";
             if (target.getAvailableQuota() <= 0) return "Error: No quota left.";
 
-            String status = repository.getEnrollmentStatus(studentId, sectionId);
-            if (status == null) {
-                repository.insertEnrollment(studentId, sectionId);
-            } else if (status.equals("DROPPED")) {
-                repository.updateEnrollmentStatus(studentId, sectionId, "ENROLLED");
-            } else {
-                return "Error: Already enrolled in this section.";
-            }
-            return "Successfully enrolled.";
+            String currentStatus = repository.getEnrollmentStatus(studentId, sectionId);
 
+            if ("ENROLLED".equals(currentStatus)) {
+                return "Error: Already in your schedule.";
+            } else if ("DROPPED".equals(currentStatus)) {
+                repository.updateEnrollmentStatus(studentId, sectionId, "ENROLLED");
+                return "Successfully enrolled in " + target.getCourseName();
+            } else {
+                repository.insertEnrollment(studentId, sectionId);
+                return "Successfully enrolled in " + target.getCourseName();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return "Error: Database failure.";
+        }
+    }
+
+    public String dropCourse(Long studentId, Long sectionId) {
+        try {
+            String status = repository.getEnrollmentStatus(studentId, sectionId);
+            if (status == null || "DROPPED".equals(status)) return "Error: Enrollment not found.";
+
+            repository.updateEnrollmentStatus(studentId, sectionId, "DROPPED");
+            return "Successfully dropped.";
         } catch (SQLException e) {
             return "Error: Database failure.";
         }
     }
 
-    @Override
-    public String dropCourse(Long studentId, Long sectionId) {
+    public List<Course> viewAvailableCourses() {
         try {
-            int rows = repository.updateEnrollmentStatus(studentId, sectionId, "DROPPED");
-            return rows > 0 ? "Successfully dropped." : "Error: Enrollment not found.";
+            return repository.findCourses("");
         } catch (SQLException e) {
-            return "Error: Drop failed.";
+            return List.of();
         }
     }
 
-    @Override
-    public Transcript viewTranscript(Long studentId) {
-        Transcript transcript = new Transcript(studentId); // Now matches 1-arg constructor
-        try (java.sql.ResultSet rs = repository.getTranscriptData(studentId)) {
-            while (rs.next()) {
-                Course c = new Course();
-                c.setCourseCode(rs.getString("course_code"));
-                c.setCourseName(rs.getString("course_name"));
-
-                transcript.addCourse(c, rs.getString("grade_code"));
-            }
-        } catch (java.sql.SQLException e) {
-            System.err.println("Transcript Error: " + e.getMessage());
+    public List<Course> searchCourses(String query) {
+        try {
+            return repository.findCourses(query);
+        } catch (SQLException e) {
+            return List.of();
         }
-        return transcript;
+    }
+
+    public Transcript viewTranscript(Long studentId) {
+        return new Transcript(studentId);
+    }
+
+    public List<Course> getMySchedule(Long studentId) {
+        try {
+            return repository.findEnrolledCourses(studentId);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return List.of();
+        }
     }
 }
