@@ -1,28 +1,38 @@
 package com.sis.student.model;
 
 public class Course {
-    private Long courseId;
+    private Long sectionId;
     private String courseCode;
     private String courseName;
-    private int quota;
+    private String sectionNo;
+    private String termName;
+    private Integer availableQuota;
     private String instructorName;
 
-    // Constructor
-    public Course(Long courseId, String courseCode, String courseName, int quota, String instructorName) {
-        this.courseId = courseId;
+    public Course() {}
+
+    public Course(Long sectionId, String courseCode, String courseName, String sectionNo,
+                  String termName, Integer availableQuota, String instructorName) {
+        this.sectionId = sectionId;
         this.courseCode = courseCode;
         this.courseName = courseName;
-        this.quota = quota;
+        this.sectionNo = sectionNo;
+        this.termName = termName;
+        this.availableQuota = availableQuota;
         this.instructorName = instructorName;
     }
 
-    // Getters (Required for the UI to show the data)
-    public Long getCourseId() { return courseId; }
+    public Long getCourseId() { return sectionId; } // Alias for getSectionId
+    public void setQuota(int quota) { this.availableQuota = quota; } // Alias for setAvailableQuota
+
+    public Long getSectionId() { return sectionId; }
     public String getCourseCode() { return courseCode; }
     public String getCourseName() { return courseName; }
-    public int getQuota() { return quota; }
+    public Integer getAvailableQuota() { return availableQuota; }
+    public String getSectionNo() { return sectionNo; }
+    public String getTermName() { return termName; }
     public String getInstructorName() { return instructorName; }
 
-    // Setters (Required to update the quota when someone joins)
-    public void setQuota(int quota) { this.quota = quota; }
+    public void setCourseCode(String courseCode) { this.courseCode = courseCode; }
+    public void setCourseName(String courseName) { this.courseName = courseName; }
 }

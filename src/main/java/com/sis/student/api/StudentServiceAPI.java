@@ -7,8 +7,7 @@ import java.util.List;
 public interface StudentServiceAPI {
     List<Course> viewAvailableCourses();
     List<Course> searchCourses(String query);
-    String addCourse(Long studentId, Long courseId);
-    String dropCourse(Long studentId, Long courseId);
+    String addCourse(Long studentId, Long sectionId);
+    String dropCourse(Long studentId, Long sectionId);
     Transcript viewTranscript(Long studentId);
-    Course viewCourseDetails(Long courseId);
 }
