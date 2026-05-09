@@ -1,20 +1,26 @@
 package com.sis.instructor.service;
 
+import com.sis.instructor.repository.GradeRepository;
+import com.sis.instructor.repository.JdbcGradeRepository;
+import com.sis.instructor.repository.RepositoryChangeType;
 import com.sis.instructor.validation.GradeValidator;
-import com.sis.instructor.store.InstructorDataStore;
 
 public class GradeService {
     private final AuthorizationService authorizationService;
     private final GradeValidator gradeValidator;
-    private final InstructorDataStore dataStore;
+    private final GradeRepository gradeRepository;
+
+    public GradeService() {
+        this(new AuthorizationService(), new GradeValidator(), new JdbcGradeRepository());
+    }
 
     public GradeService(
             AuthorizationService authorizationService,
             GradeValidator gradeValidator,
-            InstructorDataStore dataStore) {
+            GradeRepository gradeRepository) {
         this.authorizationService = authorizationService;
         this.gradeValidator = gradeValidator;
-        this.dataStore = dataStore;
+        this.gradeRepository = gradeRepository;
     }
 
     public String saveOrUpdateGrade(
@@ -25,7 +31,7 @@ public class GradeService {
         if (!authorizationService.isInstructorAssignedToCourse(instructorId, courseId)) {
             return "Access denied for selected course.";
         }
-        if (!dataStore.isStudentRegisteredInSection(studentId, courseId)) {
+        if (!gradeRepository.isStudentRegisteredInSection(studentId, courseId)) {
             return "Student is not enrolled in selected course.";
         }
         if (!gradeValidator.isValidLetterGrade(letterGrade)) {
@@ -33,10 +39,10 @@ public class GradeService {
         }
 
         String normalizedGrade = gradeValidator.normalizeLetterGrade(letterGrade);
-        InstructorDataStore.ChangeType changeType =
-                dataStore.saveOrUpdateGrade(studentId, courseId, normalizedGrade);
+        RepositoryChangeType changeType =
+                gradeRepository.saveOrUpdateGrade(studentId, courseId, normalizedGrade);
 
-        if (changeType == InstructorDataStore.ChangeType.CREATED) {
+        if (changeType == RepositoryChangeType.CREATED) {
             return "Success: Grade recorded for student ID " + studentId + ".";
         }
         return "Success: Grade updated for student ID " + studentId + ".";

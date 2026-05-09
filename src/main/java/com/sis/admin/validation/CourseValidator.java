@@ -1,17 +1,11 @@
 package com.sis.admin.validation;
 
-import com.sis.student.model.Course;
-import java.util.List;
+import com.sis.admin.repository.CourseRepository;
 
 public class CourseValidator {
+    private final CourseRepository repository = new CourseRepository();
 
-    public boolean isUniqueCourse(List<Course> database, String courseCode, String courseName) {
-        for (Course course : database) {
-            if (course.getCourseCode().equalsIgnoreCase(courseCode) ||
-                    course.getCourseName().equalsIgnoreCase(courseName)) {
-                return false;
-            }
-        }
-        return true;
+    public boolean isUniqueCourse(String courseCode, String courseName) {
+        return !repository.existsByCodeOrName(courseCode, courseName);
     }
 }

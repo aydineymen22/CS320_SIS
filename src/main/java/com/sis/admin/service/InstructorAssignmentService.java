@@ -1,22 +1,21 @@
 package com.sis.admin.service;
 
+import com.sis.admin.repository.CourseRepository;
+
 public class InstructorAssignmentService {
+    private final CourseRepository courseRepository;
 
     public InstructorAssignmentService() {
-        // Dependencies like CourseRepository will be injected here later
+        this.courseRepository = new CourseRepository();
     }
 
-    public String assignInstructor(Long courseId, Long instructorId) {
-        // TODO: Check if course exists, check if instructor exists
-        // TODO: Safely unlink old instructor if one exists (1-to-1 mapping rule)
-        // TODO: Link new instructor and save
-
-        return "Success: Instructor ID " + instructorId + " has been assigned to Course ID " + courseId + ".";
+    public String assignInstructor(Long sectionId, Long instructorId) {
+        boolean success = courseRepository.assignInstructor(sectionId, instructorId);
+        return success ? "Success: Instructor ID " + instructorId + " assigned to Section ID " + sectionId + "." : "Error: Assignment failed. Check if IDs exist.";
     }
 
-    public String removeInstructor(Long courseId) {
-        // TODO: Unlink instructor from course and save
-
-        return "Success: Instructor removed from Course ID " + courseId + ".";
+    public String removeInstructor(Long sectionId) {
+        boolean success = courseRepository.removeInstructor(sectionId);
+        return success ? "Success: Instructor removed from Section ID " + sectionId + "." : "Error: Removal failed.";
     }
 }

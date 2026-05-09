@@ -1,42 +1,33 @@
 package com.sis.admin.service;
 
+import com.sis.admin.repository.CourseRepository;
 import com.sis.admin.validation.CourseValidator;
-import com.sis.student.model.Course;
-
-import java.util.ArrayList;
-import java.util.List;
+import java.sql.SQLException;
 
 public class CourseManagementService {
     private final CourseValidator courseValidator;
-
-    // In-memory mock database matching the Student component style
-    private List<Course> mockCourseDatabase = new ArrayList<>();
-    private Long courseIdCounter = 1000L;
+    private final CourseRepository courseRepository;
 
     public CourseManagementService(CourseValidator courseValidator) {
         this.courseValidator = courseValidator;
+        this.courseRepository = new CourseRepository();
     }
 
     public String createCourse(String courseCode, String courseName, int quota) {
-        if (!courseValidator.isUniqueCourse(mockCourseDatabase, courseCode, courseName)) {
-            return "Error: A course with this code or name already exists.";
+        if (!courseValidator.isUniqueCourse(courseCode, courseName)) {
+            return "Error: A course with code '" + courseCode + "' or name '" + courseName + "' already exists.";
         }
 
-        Long newId = courseIdCounter++;
-        Course newCourse = new Course(newId, courseCode, courseName, quota, "Unassigned");
-        mockCourseDatabase.add(newCourse);
-
-        return "Success: Course '" + courseName + "' created with ID: " + newId;
+        try {
+            Long newSectionId = courseRepository.saveCourse(courseCode, courseName, quota);
+            return "Success: Course '" + courseName + "' created and assigned Section ID: " + newSectionId;
+        } catch (SQLException e) {
+            return "Database Error: Could not create course. " + e.getMessage();
+        }
     }
 
     public String updateCourse(Long courseId, String newName, int newQuota) {
-        for (Course course : mockCourseDatabase) {
-            if (course.getCourseId().equals(courseId)) {
-
-                course.setQuota(newQuota);
-                return "Success: Course updated successfully.";
-            }
-        }
-        return "Error: Course not found.";
+        boolean updated = courseRepository.updateCourseQuota(courseId, newQuota);
+        return updated ? "Success: Course quota updated to " + newQuota + "." : "Error: Course not found or update failed.";
     }
 }

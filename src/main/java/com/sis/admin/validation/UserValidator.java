@@ -1,8 +1,10 @@
 package com.sis.admin.validation;
+import com.sis.admin.repository.UserRepository;
 
 public class UserValidator {
-    public boolean isUniqueEmail(String email) {
+    private final UserRepository repository = new UserRepository();
 
-        return true;
+    public boolean isUniqueEmail(String email) {
+        return !repository.existsByEmail(email);
     }
 }

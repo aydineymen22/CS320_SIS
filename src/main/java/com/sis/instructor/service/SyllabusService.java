@@ -1,6 +1,8 @@
 package com.sis.instructor.service;
 
-import com.sis.instructor.store.InstructorDataStore;
+import com.sis.instructor.repository.JdbcSyllabusRepository;
+import com.sis.instructor.repository.RepositoryChangeType;
+import com.sis.instructor.repository.SyllabusRepository;
 import com.sis.instructor.validation.FileTypeValidator;
 import java.io.File;
 import java.nio.file.Files;
@@ -8,15 +10,19 @@ import java.nio.file.Files;
 public class SyllabusService {
     private final AuthorizationService authorizationService;
     private final FileTypeValidator fileTypeValidator;
-    private final InstructorDataStore dataStore;
+    private final SyllabusRepository syllabusRepository;
+
+    public SyllabusService() {
+        this(new AuthorizationService(), new FileTypeValidator(), new JdbcSyllabusRepository());
+    }
 
     public SyllabusService(
             AuthorizationService authorizationService,
             FileTypeValidator fileTypeValidator,
-            InstructorDataStore dataStore) {
+            SyllabusRepository syllabusRepository) {
         this.authorizationService = authorizationService;
         this.fileTypeValidator = fileTypeValidator;
-        this.dataStore = dataStore;
+        this.syllabusRepository = syllabusRepository;
     }
 
     public String uploadOrReplaceSyllabus(Long instructorId, Long courseId, File syllabusFile) {
@@ -31,10 +37,17 @@ public class SyllabusService {
 
         String fileType = fileTypeValidator.detectFileType(syllabusFile.getName(), contentType);
         String mimeType = fileTypeValidator.resolveMimeType(syllabusFile.getName(), contentType);
-        InstructorDataStore.ChangeType changeType =
-                dataStore.saveOrReplaceSyllabus(courseId, syllabusFile, fileType, mimeType);
+        String fileName = syllabusFile.getName().trim();
+        String filePath = "/uploads/syllabuses/" + fileName;
+        RepositoryChangeType changeType =
+                syllabusRepository.saveOrReplaceSyllabus(
+                        courseId,
+                        fileName,
+                        fileType,
+                        mimeType,
+                        filePath);
 
-        if (changeType == InstructorDataStore.ChangeType.CREATED) {
+        if (changeType == RepositoryChangeType.CREATED) {
             return "Success: Syllabus uploaded for course ID " + courseId + ".";
         }
         return "Success: Syllabus replaced for course ID " + courseId + ".";

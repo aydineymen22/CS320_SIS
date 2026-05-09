@@ -1,6 +1,6 @@
 package com.sis.instructor.service;
 
-import com.sis.instructor.store.InstructorDataStore;
+import com.sis.instructor.support.InstructorRepositoryFakes;
 import com.sis.instructor.validation.GradeValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -8,15 +8,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class GradeServiceTest {
-    private InstructorDataStore dataStore;
+    private InstructorRepositoryFakes repositories;
     private GradeService gradeService;
 
     @BeforeEach
     void setUp() {
-        dataStore = new InstructorDataStore();
-        AuthorizationService authorizationService = new AuthorizationService(dataStore);
-        GradeValidator gradeValidator = new GradeValidator(dataStore.getValidGradeCodes());
-        gradeService = new GradeService(authorizationService, gradeValidator, dataStore);
+        repositories = new InstructorRepositoryFakes();
+        AuthorizationService authorizationService = new AuthorizationService(repositories);
+        GradeValidator gradeValidator = new GradeValidator(repositories.findValidGradeCodes());
+        gradeService = new GradeService(authorizationService, gradeValidator, repositories);
     }
 
     @Test
@@ -24,8 +24,8 @@ public class GradeServiceTest {
         String result = gradeService.saveOrUpdateGrade(3L, 1L, 1L, "a-");
 
         assertEquals("Success: Grade recorded for student ID 1.", result);
-        assertTrue(dataStore.findGradeCode(1L, 1L).isPresent());
-        assertEquals("A-", dataStore.findGradeCode(1L, 1L).orElseThrow());
+        assertTrue(repositories.findGradeCode(1L, 1L).isPresent());
+        assertEquals("A-", repositories.findGradeCode(1L, 1L).orElseThrow());
     }
 
     @Test

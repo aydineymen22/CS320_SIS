@@ -1,18 +1,19 @@
 package com.sis.admin.service;
 
+import com.sis.admin.repository.UserRepository;
 import com.sis.admin.validation.SecurityService;
 import com.sis.admin.validation.UserValidator;
+import java.sql.SQLException;
 
 public class UserManagementService {
     private final UserValidator userValidator;
     private final SecurityService securityService;
-
-    // Temporary mock data counter for generating IDs
-    private Long userIdCounter = 3000L;
+    private final UserRepository userRepository;
 
     public UserManagementService(UserValidator userValidator, SecurityService securityService) {
         this.userValidator = userValidator;
         this.securityService = securityService;
+        this.userRepository = new UserRepository();
     }
 
     public String createUser(String role, String firstName, String lastName, String email) {
@@ -20,28 +21,32 @@ public class UserManagementService {
             return "Error: A user with the email '" + email + "' already exists.";
         }
 
-        // Generate a temporary password for new users
         String tempPassword = "DefaultPassword123!";
         String hashedPassword = securityService.hashPassword(tempPassword);
 
-        Long newUserId = userIdCounter++;
-
-        // TODO: Build User entity with hashedPassword and save to UserRepository
-        return "Success: " + role + " account created for " + firstName + " " + lastName + " (ID: " + newUserId + ").";
+        try {
+            Long newUserId = userRepository.saveUser(role, firstName, lastName, email, hashedPassword);
+            return "Success: " + role + " account created for " + firstName + " " + lastName + " (User ID: " + newUserId + ").";
+        } catch (SQLException e) {
+            return "Database Error: Could not create user. " + e.getMessage();
+        }
     }
 
     public String updateUser(Long userId, String firstName, String lastName) {
-        // TODO: Fetch user, update names, save
-        return "Success: User ID " + userId + " has been updated.";
+        boolean success = userRepository.updateUserDetails(userId, firstName, lastName);
+        return success ? "Success: User ID " + userId + " details updated." : "Error: User ID not found or update failed.";
     }
 
     public String deactivateUser(Long userId) {
-        // TODO: Fetch user, set status to inactive, save
-        return "Success: User ID " + userId + " has been deactivated. They can no longer log in.";
+        boolean success = userRepository.setStatus(userId, false);
+        return success ? "Success: User ID " + userId + " has been deactivated." : "Error: User ID not found.";
     }
 
     public String resetPassword(Long userId) {
-        // TODO: Generate new temp password, hash via SecurityService, save
-        return "Success: Password reset for User ID " + userId + ". Temporary password generated.";
+        String newTempPassword = "ResetPassword123!";
+        String newHashedPassword = securityService.hashPassword(newTempPassword);
+
+        boolean success = userRepository.updatePassword(userId, newHashedPassword);
+        return success ? "Success: Password reset for User ID " + userId + ". Temporary password generated." : "Error: User ID not found.";
     }
 }

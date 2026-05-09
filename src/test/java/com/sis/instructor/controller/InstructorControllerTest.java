@@ -5,7 +5,7 @@ import com.sis.instructor.service.AuthorizationService;
 import com.sis.instructor.service.GradeService;
 import com.sis.instructor.service.RosterService;
 import com.sis.instructor.service.SyllabusService;
-import com.sis.instructor.store.InstructorDataStore;
+import com.sis.instructor.support.InstructorRepositoryFakes;
 import com.sis.instructor.validation.FileTypeValidator;
 import com.sis.instructor.validation.GradeValidator;
 import java.util.List;
@@ -19,15 +19,15 @@ public class InstructorControllerTest {
 
     @BeforeEach
     void setUp() {
-        InstructorDataStore dataStore = new InstructorDataStore();
-        AuthorizationService authorizationService = new AuthorizationService(dataStore);
-        GradeValidator gradeValidator = new GradeValidator(dataStore.getValidGradeCodes());
+        InstructorRepositoryFakes repositories = new InstructorRepositoryFakes();
+        AuthorizationService authorizationService = new AuthorizationService(repositories);
+        GradeValidator gradeValidator = new GradeValidator(repositories.findValidGradeCodes());
         FileTypeValidator fileTypeValidator = new FileTypeValidator();
 
         controller = new InstructorController(
-                new SyllabusService(authorizationService, fileTypeValidator, dataStore),
-                new RosterService(authorizationService, dataStore),
-                new GradeService(authorizationService, gradeValidator, dataStore));
+                new SyllabusService(authorizationService, fileTypeValidator, repositories),
+                new RosterService(authorizationService, repositories),
+                new GradeService(authorizationService, gradeValidator, repositories));
     }
 
     @Test
