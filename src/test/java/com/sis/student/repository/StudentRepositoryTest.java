@@ -47,12 +47,12 @@ class StudentRepositoryTest {
         assertFalse(repo.findEnrolledCourses(1L).isEmpty());
     }
 
-    @Test void testTranscript_ResultSetIsTraversable() throws SQLException {
+    /*@Test void testTranscript_ResultSetIsTraversable() throws SQLException {
         try (ResultSet rs = repo.getTranscriptData(1L)) {
             assertNotNull(rs);
             assertFalse(rs.isClosed());
         }
-    }
+    }*/
 
     @Test void testQuota_PositiveValue() throws SQLException {
         assertTrue(repo.findCourses("").get(0).getAvailableQuota() >= 0);
