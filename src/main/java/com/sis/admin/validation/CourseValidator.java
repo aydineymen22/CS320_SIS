@@ -1,4 +1,5 @@
 package com.sis.admin.validation;
+
 import com.sis.admin.repository.CourseRepository;
 
 public class CourseValidator {

@@ -1,7 +1,7 @@
 package com.sis.instructor.service;
 
 import com.sis.instructor.model.SyllabusMetadata;
-import com.sis.instructor.store.InstructorDataStore;
+import com.sis.instructor.support.InstructorRepositoryFakes;
 import com.sis.instructor.validation.FileTypeValidator;
 import java.io.File;
 import org.junit.jupiter.api.BeforeEach;
@@ -10,17 +10,17 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SyllabusServiceTest {
-    private InstructorDataStore dataStore;
+    private InstructorRepositoryFakes repositories;
     private SyllabusService syllabusService;
 
     @BeforeEach
     void setUp() {
-        dataStore = new InstructorDataStore();
-        AuthorizationService authorizationService = new AuthorizationService(dataStore);
+        repositories = new InstructorRepositoryFakes();
+        AuthorizationService authorizationService = new AuthorizationService(repositories);
         syllabusService = new SyllabusService(
                 authorizationService,
                 new FileTypeValidator(),
-                dataStore);
+                repositories);
     }
 
     @Test
@@ -32,7 +32,7 @@ public class SyllabusServiceTest {
 
         assertEquals("Success: Syllabus replaced for course ID 1.", result);
 
-        SyllabusMetadata metadata = dataStore.findSyllabus(1L).orElseThrow();
+        SyllabusMetadata metadata = repositories.findBySectionId(1L).orElseThrow();
         assertEquals("cs320_revised_syllabus.pdf", metadata.getFileName());
         assertEquals("PDF", metadata.getFileType());
     }
@@ -45,6 +45,6 @@ public class SyllabusServiceTest {
                 new File("notes.txt"));
 
         assertEquals("Unsupported syllabus type.", result);
-        assertTrue(dataStore.findSyllabus(1L).isPresent());
+        assertTrue(repositories.findBySectionId(1L).isPresent());
     }
 }

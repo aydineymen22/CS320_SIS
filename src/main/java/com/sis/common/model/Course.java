@@ -11,6 +11,10 @@ public class Course {
 
     public Course() {}
 
+    public Course(Long sectionId, String courseCode, String courseName, int availableQuota, String instructorName) {
+        this(sectionId, courseCode, courseName, "", "", availableQuota, instructorName);
+    }
+
     public Course(Long sectionId, String courseCode, String courseName, String sectionNo,
                   String termName, int availableQuota, String instructorName) {
         this.sectionId = sectionId;
@@ -27,7 +31,15 @@ public class Course {
         return sectionId;
     }
 
+    public Long getCourseId() {
+        return sectionId;
+    }
+
     public int getAvailableQuota() {
+        return availableQuota;
+    }
+
+    public int getQuota() {
         return availableQuota;
     }
 
@@ -66,5 +78,9 @@ public class Course {
 
     public void setAvailableQuota(int availableQuota) {
         this.availableQuota = availableQuota;
+    }
+
+    public void setQuota(int quota) {
+        this.availableQuota = quota;
     }
 }

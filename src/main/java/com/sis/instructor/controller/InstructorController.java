@@ -13,6 +13,10 @@ public class InstructorController implements InstructorInterface {
     private final RosterService rosterService;
     private final GradeService gradeService;
 
+    public InstructorController() {
+        this(new SyllabusService(), new RosterService(), new GradeService());
+    }
+
     public InstructorController(
             SyllabusService syllabusService,
             RosterService rosterService,
