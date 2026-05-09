@@ -13,7 +13,6 @@ class StudentRepositoryTest {
 
     @BeforeEach
     void cleanup() throws SQLException {
-        // Clear all possible test rows for both test students
         try (Connection conn = DatabaseManager.getConnection();
              Statement stmt = conn.createStatement()) {
             stmt.executeUpdate("DELETE FROM enrollments WHERE student_id IN (1, 2)");
