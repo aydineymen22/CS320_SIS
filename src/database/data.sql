@@ -1,16 +1,15 @@
 USE sis_db;
 
 INSERT INTO grade_types (grade_code) VALUES
-('A'),
-('A-'),
-('B+'),
-('B'),
-('B-'),
-('C+'),
-('C'),
-('C-'),
-('D+'),
-('D');
+('AA'),
+('BA'),
+('BB'),
+('CB'),
+('CC'),
+('DC'),
+('DD'),
+('FD'),
+('FF');
 
 INSERT INTO users (email, password_hash, first_name, last_name)
 VALUES
