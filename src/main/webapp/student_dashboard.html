@@ -4,29 +4,37 @@
     <meta charset="UTF-8">
     <title>Student Portal | Dashboard</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 40px; background-color: #f4f7f6; }
-        .container { max-width: 900px; margin: auto; }
-        .box { background: white; padding: 25px; margin-bottom: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        h2 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 40px; background-color: #f4f7f6; color: #333; }
+        .container { max-width: 1000px; margin: auto; }
+        .box { background: white; padding: 25px; margin-bottom: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        h2 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; margin-top: 0; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: #fff; }
         th, td { text-align: left; padding: 12px; border-bottom: 1px solid #eee; }
-        th { background-color: #f8f9fa; color: #7f8c8d; }
-        input[type="text"] { width: 70%; padding: 10px; border-radius: 5px; border: 1px solid #ddd; }
-        button { padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; transition: 0.3s; }
+        th { background-color: #f8f9fa; color: #7f8c8d; text-transform: uppercase; font-size: 12px; }
+
+        input[type="text"] { width: 100%; max-width: 400px; padding: 12px; border-radius: 6px; border: 1px solid #ddd; font-size: 14px; }
+        button { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: 0.2s; }
+
+        .btn-search { background-color: #3498db; color: white; margin-left: 10px; }
         .btn-enroll { background-color: #27ae60; color: white; }
         .btn-drop { background-color: #e74c3c; color: white; }
-        .status-msg { margin-top: 10px; font-weight: bold; }
+        .btn-transcript { background-color: #8e44ad; color: white; margin-bottom: 15px; }
+
+        .status-msg { margin-top: 10px; font-weight: bold; color: #7f8c8d; }
+        tr:hover { background-color: #fcfcfc; }
     </style>
 </head>
 <body>
+
 <div class="container">
-    <h1>Welcome, Student Portal</h1>
+    <h1>Student Dashboard</h1>
 
     <div class="box">
-        <h2>Course Search & Registration</h2>
-        <p>Type a course code (e.g., CS320) to find available sections.</p>
-        <input type="text" id="searchInput" placeholder="Search by Course Code or Name...">
-        <button onclick="searchCourses()" style="background-color: #3498db; color: white;">Search</button>
+        <h2>Course Registration</h2>
+        <p>Search for courses by code or name. Results appear as you type.</p>
+        <div style="display: flex; align-items: center;">
+            <input type="text" id="searchInput" oninput="searchCourses()" placeholder="e.g. CS320 or Calculus...">
+        </div>
         <div id="searchFeedback" class="status-msg"></div>
 
         <table id="searchTable" style="display:none;">
@@ -53,37 +61,57 @@
                 <th>Action</th>
             </tr>
             </thead>
-            <tbody id="myScheduleRows"></tbody>
+            <tbody id="myScheduleRows">
+            <tr><td colspan="4">Loading schedule...</td></tr>
+            </tbody>
         </table>
+    </div>
+
+    <div class="box">
+        <h2>Academic Transcript</h2>
+        <button class="btn-transcript" onclick="loadTranscript()">View Completed Courses & Grades</button>
+
+        <div id="transcriptArea" style="display:none;">
+            <table>
+                <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Course Name</th>
+                    <th>Grade</th>
+                </tr>
+                </thead>
+                <tbody id="transcriptRows"></tbody>
+            </table>
+        </div>
     </div>
 </div>
 
 <script>
+    // Initialize page
     window.onload = function() {
-        console.log("Dashboard Loaded. Initializing schedule...");
         loadMySchedule();
     };
 
+    // --- LIVE SEARCH LOGIC ---
     function searchCourses() {
-        const queryInput = document.getElementById('searchInput');
+        const query = document.getElementById('searchInput').value;
         const resultsTable = document.getElementById('searchTable');
         const resultsBody = document.getElementById('searchResults');
         const feedback = document.getElementById('searchFeedback');
 
-        if (!queryInput) return;
-        const query = queryInput.value;
+        if (query.length === 0) {
+            resultsTable.style.display = "none";
+            feedback.innerText = "";
+            return;
+        }
 
-        feedback.innerText = "Searching...";
-
+        // Relative path used to prevent context path issues
         fetch(`api/student-action?action=search&query=${encodeURIComponent(query)}`)
-            .then(res => {
-                if (!res.ok) throw new Error("Server error");
-                return res.json();
-            })
+            .then(res => res.json())
             .then(courses => {
                 resultsBody.innerHTML = "";
-                if (!courses || courses.length === 0) {
-                    feedback.innerText = "No courses found matching '" + query + "'";
+                if (courses.length === 0) {
+                    feedback.innerText = "No matches found.";
                     resultsTable.style.display = "none";
                     return;
                 }
@@ -100,20 +128,18 @@
                         </tr>`;
                 });
             })
-            .catch(err => {
-                console.error(err);
-                feedback.innerText = "Error connecting to server.";
-            });
+            .catch(err => console.error("Search Error:", err));
     }
 
+    // --- SCHEDULE LOGIC ---
     function loadMySchedule() {
         const scheduleBody = document.getElementById('myScheduleRows');
         fetch('api/student-action?action=getSchedule')
             .then(res => res.json())
             .then(courses => {
                 scheduleBody.innerHTML = "";
-                if (!courses || courses.length === 0) {
-                    scheduleBody.innerHTML = "<tr><td colspan='4'>No courses in your schedule.</td></tr>";
+                if (courses.length === 0) {
+                    scheduleBody.innerHTML = "<tr><td colspan='4'>You are not currently enrolled in any courses.</td></tr>";
                     return;
                 }
                 courses.forEach(c => {
@@ -126,9 +152,13 @@
                         </tr>`;
                 });
             })
-            .catch(err => console.error("Schedule Load Error:", err));
+            .catch(err => {
+                console.error("Schedule Error:", err);
+                scheduleBody.innerHTML = "<tr><td colspan='4' style='color:red;'>Error loading schedule.</td></tr>";
+            });
     }
 
+    // --- ENROLL / DROP LOGIC ---
     function manageCourse(actionType, sectionId) {
         const params = new URLSearchParams();
         params.append('action', actionType);
@@ -142,14 +172,43 @@
             .then(res => res.text())
             .then(msg => {
                 alert(msg);
-                loadMySchedule();
-                searchCourses();
+                loadMySchedule(); // Refresh schedule view
+                searchCourses();  // Refresh search to update quota numbers
+            })
+            .catch(err => alert("Action failed: " + err));
+    }
+
+    // --- TRANSCRIPT LOGIC ---
+    function loadTranscript() {
+        const transcriptBody = document.getElementById('transcriptRows');
+        const transcriptArea = document.getElementById('transcriptArea');
+
+        fetch('api/student-action?action=getTranscript')
+            .then(res => res.json())
+            .then(data => {
+                transcriptArea.style.display = "block";
+                transcriptBody.innerHTML = "";
+
+                if (data.length === 0) {
+                    transcriptBody.innerHTML = "<tr><td colspan='3'>No completed courses found in your history.</td></tr>";
+                    return;
+                }
+
+                data.forEach(item => {
+                    transcriptBody.innerHTML += `
+                        <tr>
+                            <td>${item.code}</td>
+                            <td>${item.name}</td>
+                            <td><strong>${item.grade}</strong></td>
+                        </tr>`;
+                });
             })
             .catch(err => {
-                console.error("Management Error:", err);
-                alert("Action failed. Check console.");
+                console.error("Transcript Error:", err);
+                alert("Could not load transcript.");
             });
     }
 </script>
+
 </body>
 </html>

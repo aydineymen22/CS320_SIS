@@ -65,7 +65,13 @@ public class StudentService {
     }
 
     public Transcript viewTranscript(Long studentId) {
-        return new Transcript(studentId);
+        Transcript transcript = new Transcript(studentId);
+        try {
+            repository.fillTranscript(transcript, studentId);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return transcript;
     }
 
     public List<Course> getMySchedule(Long studentId) {
