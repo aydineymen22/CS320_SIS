@@ -2,6 +2,7 @@ package com.sis.student.repository;
 
 import com.sis.common.DatabaseManager;
 import com.sis.common.model.Course;
+import com.sis.common.model.Transcript;
 import org.junit.jupiter.api.*;
 import java.sql.*;
 import java.util.List;
@@ -47,11 +48,15 @@ class StudentRepositoryTest {
         assertFalse(repo.findEnrolledCourses(1L).isEmpty());
     }
 
-    @Test void testTranscript_ResultSetIsTraversable() throws SQLException {
-        try (ResultSet rs = repo.getTranscriptData(1L)) {
-            assertNotNull(rs);
-            assertFalse(rs.isClosed());
-        }
+    @Test
+    void testTranscript_CanPopulateModel() throws SQLException {
+        Transcript transcript = new Transcript(1L);
+
+        repo.fillTranscript(transcript, 1L);
+
+        assertNotNull(transcript.getCourses(), "Course list should not be null");
+        assertNotNull(transcript.getGrades(), "Grades map should not be null");
+
     }
 
     @Test void testQuota_PositiveValue() throws SQLException {
