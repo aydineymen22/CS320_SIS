@@ -22,7 +22,7 @@ public class AdminController implements AdminInterface {
 
     @Override
     public String createCourse(String courseCode, String courseName, int quota) {
-        if (courseCode == null || courseName == null || quota <= 0) {
+        if (isBlank(courseCode) || isBlank(courseName) || quota <= 0) {
             return "Error: Invalid course details provided.";
         }
         return courseService.createCourse(courseCode, courseName, quota);
@@ -30,7 +30,7 @@ public class AdminController implements AdminInterface {
 
     @Override
     public String updateCourse(Long courseId, String newName, int newQuota) {
-        if (courseId == null || newName == null || newQuota <= 0) {
+        if (courseId == null || isBlank(newName) || newQuota <= 0) {
             return "Error: Invalid update parameters.";
         }
         return courseService.updateCourse(courseId, newName, newQuota);
@@ -52,13 +52,16 @@ public class AdminController implements AdminInterface {
 
     @Override
     public String createUser(String role, String firstName, String lastName, String email) {
-        if (role == null || email == null) return "Error: Role and Email are required.";
+        if (isBlank(role) || isBlank(firstName) || isBlank(lastName) || isBlank(email)) {
+            return "Error: Role, Name, and Email are required.";
+        }
         return userService.createUser(role, firstName, lastName, email);
     }
 
     @Override
     public String updateUser(Long userId, String firstName, String lastName) {
         if (userId == null) return "Error: User ID is required.";
+        if (isBlank(firstName) || isBlank(lastName)) return "Error: First name and last name are required.";
         return userService.updateUser(userId, firstName, lastName);
     }
 
@@ -72,5 +75,9 @@ public class AdminController implements AdminInterface {
     public String resetPassword(Long userId) {
         if (userId == null) return "Error: User ID is required.";
         return userService.resetPassword(userId);
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
     }
 }

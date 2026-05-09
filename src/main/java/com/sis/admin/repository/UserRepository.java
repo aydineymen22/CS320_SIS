@@ -36,22 +36,24 @@ public class UserRepository {
             keys.next();
             long userId = keys.getLong(1);
 
-            if (role.equalsIgnoreCase("STUDENT")) {
+            if (role.equals("STUDENT")) {
                 String studentSql = "INSERT INTO students (student_id, student_number, admission_year, major) VALUES (?, ?, 2026, 'Undeclared')";
                 PreparedStatement studentStmt = conn.prepareStatement(studentSql);
                 studentStmt.setLong(1, userId);
                 studentStmt.setString(2, "S" + userId); // Generate unique student number
                 studentStmt.executeUpdate();
-            } else if (role.equalsIgnoreCase("INSTRUCTOR")) {
+            } else if (role.equals("INSTRUCTOR")) {
                 String instSql = "INSERT INTO instructors (instructor_id, title) VALUES (?, 'Instructor')";
                 PreparedStatement instStmt = conn.prepareStatement(instSql);
                 instStmt.setLong(1, userId);
                 instStmt.executeUpdate();
-            } else if (role.equalsIgnoreCase("ADMIN")) {
+            } else if (role.equals("ADMIN")) {
                 String adminSql = "INSERT INTO admins (admin_id) VALUES (?)";
                 PreparedStatement adminStmt = conn.prepareStatement(adminSql);
                 adminStmt.setLong(1, userId);
                 adminStmt.executeUpdate();
+            } else {
+                throw new SQLException("Unsupported user role: " + role);
             }
 
             conn.commit();

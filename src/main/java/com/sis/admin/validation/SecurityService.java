@@ -7,6 +7,9 @@ public class SecurityService {
         return BCrypt.hashpw(plainText, BCrypt.gensalt());
     }
     public boolean verifyPassword(String plainText, String hashedPassword) {
+        if (plainText == null || hashedPassword == null) {
+            return false;
+        }
         try {
             return BCrypt.checkpw(plainText, hashedPassword);
         } catch (IllegalArgumentException e) {
