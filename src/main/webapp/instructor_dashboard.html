@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIS | Instructor Dashboard</title>
+    <link rel="stylesheet" href="css/sis-ui.css">
+</head>
+<body>
+<div class="app-shell dashboard-shell">
+    <main class="main-content centered-content">
+        <div class="topbar">
+            <div class="page-title">
+                <h1>Instructor Dashboard</h1>
+                <p>View a roster by course ID, update grades, and upload syllabus files.</p>
+            </div>
+            <div class="topbar-actions">
+                <div class="profile-chip">
+                    <div class="avatar" data-avatar>IU</div>
+                    <div>
+                        <div style="font-weight: 700;" data-full-name>Instructor User</div>
+                        <div class="muted"><span data-role-label>Instructor</span> • <span data-today></span></div>
+                    </div>
+                </div>
+                <a class="logout-btn compact-logout" href="logout">Log out</a>
+            </div>
+        </div>
+
+        <div id="instructor-message" class="form-message hidden"></div>
+
+        <section class="metrics-grid">
+            <article class="metric-card">
+                <div class="metric-label">Selected course</div>
+                <div class="metric-value" id="metric-course-id">-</div>
+                <div class="metric-subtext">Course ID used for instructor actions</div>
+            </article>
+            <article class="metric-card">
+                <div class="metric-label">Roster size</div>
+                <div class="metric-value" id="metric-roster-size">0</div>
+                <div class="metric-subtext">Students returned for the selected course</div>
+            </article>
+            <article class="metric-card">
+                <div class="metric-label">Ungraded students</div>
+                <div class="metric-value" id="metric-pending-grades">0</div>
+                <div class="metric-subtext">Entries without a letter grade</div>
+            </article>
+            <article class="metric-card">
+                <div class="metric-label">Last action</div>
+                <div class="metric-value" id="metric-last-action">-</div>
+                <div class="metric-subtext">Updated after roster, grade, or upload actions</div>
+            </article>
+        </section>
+
+        <section class="content-grid">
+            <div class="stack">
+                <article class="table-card">
+                    <div class="card-head">Roster Lookup</div>
+                    <div class="card-body">
+                        <div class="quick-actions" style="margin-bottom: 16px; align-items: center; flex-wrap: wrap;">
+                            <input id="roster-course-id" type="number" min="1" class="inline-input" placeholder="Enter course ID">
+                            <button class="action-btn" id="load-roster-btn">Load roster</button>
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                            <tr>
+                                <th>Student number</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Grade</th>
+                            </tr>
+                            </thead>
+                            <tbody id="roster-body"></tbody>
+                        </table>
+                    </div>
+                </article>
+            </div>
+
+            <div class="stack">
+                <article class="notice-card">
+                    <div class="card-head">Grade Entry</div>
+                    <div class="card-body">
+                        <div class="field">
+                            <label for="grade-course-id">Course ID</label>
+                            <input id="grade-course-id" type="number" min="1" placeholder="Enter course ID">
+                        </div>
+                        <div class="field">
+                            <label for="grade-student-id">Student ID</label>
+                            <input id="grade-student-id" type="number" min="1" placeholder="Enter student ID">
+                        </div>
+                        <div class="field">
+                            <label for="letter-grade">Letter grade</label>
+                            <select id="letter-grade">
+                                <option>AA</option>
+                                <option>BA</option>
+                                <option>BB</option>
+                                <option>CB</option>
+                                <option>CC</option>
+                                <option>DC</option>
+                                <option>DD</option>
+                                <option>FD</option>
+                                <option>FF</option>
+                            </select>
+                        </div>
+                        <button class="action-btn" style="width: 100%;" id="save-grade-btn">Save grade</button>
+                    </div>
+                </article>
+
+                <article class="notice-card">
+                    <div class="card-head">Syllabus Upload</div>
+                    <div class="card-body">
+                        <div class="field">
+                            <label for="syllabus-course-id">Course ID</label>
+                            <input id="syllabus-course-id" type="number" min="1" placeholder="Enter course ID">
+                        </div>
+                        <div class="field">
+                            <label for="syllabus-file">Syllabus file</label>
+                            <input id="syllabus-file" type="file" accept=".pdf,.doc,.docx">
+                        </div>
+                        <button class="action-btn" style="width: 100%;" id="upload-syllabus-btn">Upload file</button>
+                    </div>
+                </article>
+            </div>
+        </section>
+    </main>
+</div>
+<script src="js/dashboard-ui.js"></script>
+<script src="js/common.js"></script>
+<script src="js/instructor-dashboard.js"></script>
+</body>
+</html>

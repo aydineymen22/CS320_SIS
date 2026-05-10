@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIS | Admin Dashboard</title>
+    <link rel="stylesheet" href="css/sis-ui.css">
+</head>
+<body>
+<div class="app-shell dashboard-shell">
+    <main class="main-content centered-content">
+        <div class="topbar">
+            <div class="page-title">
+                <h1>Admin Dashboard</h1>
+                <p>Use the available servlet actions to manage users, courses, and instructor assignments.</p>
+            </div>
+            <div class="topbar-actions">
+                <div class="profile-chip">
+                    <div class="avatar" data-avatar>AU</div>
+                    <div>
+                        <div style="font-weight: 700;" data-full-name>Admin User</div>
+                        <div class="muted"><span data-role-label>Admin</span> • <span data-today></span></div>
+                    </div>
+                </div>
+                <a class="logout-btn compact-logout" href="logout">Log out</a>
+            </div>
+        </div>
+
+        <div id="admin-message" class="form-message hidden"></div>
+
+        <section class="content-grid">
+            <div class="stack">
+                <article class="table-card">
+                    <div class="card-head">Create User</div>
+                    <div class="card-body">
+                        <div class="field">
+                            <label for="user-role">Role</label>
+                            <select id="user-role">
+                                <option value="STUDENT">Student</option>
+                                <option value="INSTRUCTOR">Instructor</option>
+                                <option value="ADMIN">Admin</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label for="first-name">First name</label>
+                            <input id="first-name" type="text" placeholder="John">
+                        </div>
+                        <div class="field">
+                            <label for="last-name">Last name</label>
+                            <input id="last-name" type="text" placeholder="Doe">
+                        </div>
+                        <div class="field">
+                            <label for="email-address">Email</label>
+                            <input id="email-address" type="email" placeholder="user@example.com">
+                        </div>
+                        <button class="action-btn" style="width: 100%;" id="create-user-btn">Create account</button>
+                    </div>
+                </article>
+
+                <article class="table-card">
+                    <div class="card-head">User Maintenance</div>
+                    <div class="card-body">
+                        <div class="field">
+                            <label for="manage-user-id">User ID</label>
+                            <input id="manage-user-id" type="number" min="1" placeholder="Enter user ID">
+                        </div>
+                        <div class="field">
+                            <label for="manage-first-name">Updated first name</label>
+                            <input id="manage-first-name" type="text" placeholder="Updated first name">
+                        </div>
+                        <div class="field">
+                            <label for="manage-last-name">Updated last name</label>
+                            <input id="manage-last-name" type="text" placeholder="Updated last name">
+                        </div>
+                        <div class="quick-actions">
+                            <button class="secondary-btn" id="update-user-btn">Update user</button>
+                            <button class="ghost-btn" id="deactivate-user-btn">Deactivate user</button>
+                        </div>
+                        <div class="quick-actions" style="margin-top: 10px;">
+                            <button class="action-btn" id="reset-password-btn">Reset password</button>
+                        </div>
+                    </div>
+                </article>
+            </div>
+
+            <div class="stack">
+                <article class="notice-card">
+                    <div class="card-head">Course Management</div>
+                    <div class="card-body">
+                        <div class="field">
+                            <label for="new-course-code">Course code</label>
+                            <input id="new-course-code" type="text" placeholder="CS320">
+                        </div>
+                        <div class="field">
+                            <label for="new-course-name">Course name</label>
+                            <input id="new-course-name" type="text" placeholder="Software Engineering">
+                        </div>
+                        <div class="field">
+                            <label for="new-course-quota">Quota</label>
+                            <input id="new-course-quota" type="number" min="1" placeholder="40">
+                        </div>
+                        <button class="action-btn" style="width: 100%;" id="create-course-btn">Create course</button>
+                        <hr style="margin: 18px 0; border: 0; border-top: 1px solid rgba(80,112,135,0.12);">
+                        <div class="field">
+                            <label for="update-course-id">Course ID</label>
+                            <input id="update-course-id" type="number" min="1" placeholder="Enter course ID">
+                        </div>
+                        <div class="field">
+                            <label for="update-course-name">Updated name</label>
+                            <input id="update-course-name" type="text" placeholder="Updated course name">
+                        </div>
+                        <div class="field">
+                            <label for="update-course-quota">Updated quota</label>
+                            <input id="update-course-quota" type="number" min="1" placeholder="Updated quota">
+                        </div>
+                        <button class="secondary-btn" style="width: 100%;" id="update-course-btn">Update course</button>
+                    </div>
+                </article>
+
+                <article class="notice-card">
+                    <div class="card-head">Instructor Assignment</div>
+                    <div class="card-body">
+                        <div class="field">
+                            <label for="assignment-course-id">Course ID</label>
+                            <input id="assignment-course-id" type="number" min="1" placeholder="Enter course ID">
+                        </div>
+                        <div class="field">
+                            <label for="assignment-instructor-id">Instructor ID</label>
+                            <input id="assignment-instructor-id" type="number" min="1" placeholder="Enter instructor ID">
+                        </div>
+                        <div class="quick-actions">
+                            <button class="action-btn" id="assign-instructor-btn">Assign instructor</button>
+                            <button class="ghost-btn" id="remove-instructor-btn">Remove assignment</button>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </section>
+    </main>
+</div>
+<script src="js/dashboard-ui.js"></script>
+<script src="js/common.js"></script>
+<script src="js/admin-dashboard.js"></script>
+</body>
+</html>
