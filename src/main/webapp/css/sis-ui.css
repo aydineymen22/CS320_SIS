@@ -330,6 +330,7 @@ body {
     display: grid;
     grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.85fr);
     gap: 18px;
+    align-items: start;
 }
 
 .stack {
@@ -566,4 +567,31 @@ body {
     background: #edf4fb;
     color: var(--blue-950);
     font-weight: 700;
+}
+
+
+.detail-link {
+    color: var(--blue-950);
+    font-weight: 700;
+}
+
+.detail-link.disabled {
+    color: var(--text-500);
+    pointer-events: none;
+    cursor: default;
+}
+
+
+.profile-name {
+    font-weight: 700;
+}
+
+.metric-value-small {
+    font-size: 20px;
+    line-height: 1.2;
+}
+
+.section-info {
+    margin-top: 12px;
+    font-size: 14px;
 }
