@@ -10,6 +10,35 @@ import java.util.List;
 
 public class StudentRepository {
 
+    public List<Course> findCatalogCourses(String query) throws SQLException {
+        List<Course> courses = new ArrayList<>();
+        String sql = "SELECT catalog_course_id, course_code, course_name, course_abstract, credits " +
+                "FROM course_catalog WHERE course_name LIKE ? OR course_code LIKE ? ORDER BY course_code";
+
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            String pattern = "%" + (query == null ? "" : query.trim()) + "%";
+            ps.setString(1, pattern);
+            ps.setString(2, pattern);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    courses.add(new Course(
+                            null,
+                            rs.getString("course_code"),
+                            rs.getString("course_name"),
+                            "",
+                            "",
+                            0,
+                            "",
+                            (Integer) rs.getObject("credits"),
+                            rs.getString("course_abstract")
+                    ));
+                }
+            }
+        }
+        return courses;
+    }
+
     public List<Course> findCourses(String query) throws SQLException {
         List<Course> courses = new ArrayList<>();
         String sql = "SELECT * FROM course_listing_view WHERE course_name LIKE ? OR course_code LIKE ?";

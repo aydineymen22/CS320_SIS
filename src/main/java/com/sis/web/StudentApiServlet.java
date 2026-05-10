@@ -22,6 +22,15 @@ public class StudentApiServlet extends HttpServlet {
             AuthUtil.writeJson(resp, JsonUtil.courses(studentService.viewAvailableCourses()));
             return;
         }
+        if ("getCatalog".equals(action)) {
+            String query = value(req.getParameter("query"));
+            if (query.isEmpty()) {
+                AuthUtil.writeJson(resp, JsonUtil.courses(studentService.viewCatalogCourses()));
+            } else {
+                AuthUtil.writeJson(resp, JsonUtil.courses(studentService.searchCatalogCourses(query)));
+            }
+            return;
+        }
         if ("search".equals(action)) {
             AuthUtil.writeJson(resp, JsonUtil.courses(studentService.searchCourses(value(req.getParameter("query")))));
             return;

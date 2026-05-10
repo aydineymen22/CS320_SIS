@@ -43,7 +43,9 @@ public final class JsonUtil {
                 + "\"termName\":\"" + escape(c.getTermName()) + "\","
                 + "\"availableQuota\":" + c.getAvailableQuota() + ","
                 + "\"quota\":" + c.getQuota() + ","
-                + "\"instructorName\":\"" + escape(c.getInstructorName()) + "\""
+                + "\"instructorName\":\"" + escape(c.getInstructorName()) + "\","
+                + "\"credits\":" + (c.getCredits() == null ? "null" : c.getCredits()) + ","
+                + "\"courseAbstract\":\"" + escape(c.getCourseAbstract()) + "\""
                 + "}";
     }
 

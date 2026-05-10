@@ -8,6 +8,8 @@ public class Course {
     private String termName;
     private int availableQuota;
     private String instructorName;
+    private Integer credits;
+    private String courseAbstract;
 
     public Course() {}
 
@@ -24,6 +26,14 @@ public class Course {
         this.termName = termName;
         this.availableQuota = availableQuota;
         this.instructorName = instructorName;
+    }
+
+    public Course(Long sectionId, String courseCode, String courseName, String sectionNo,
+                  String termName, int availableQuota, String instructorName,
+                  Integer credits, String courseAbstract) {
+        this(sectionId, courseCode, courseName, sectionNo, termName, availableQuota, instructorName);
+        this.credits = credits;
+        this.courseAbstract = courseAbstract;
     }
 
 
@@ -63,6 +73,14 @@ public class Course {
         return instructorName;
     }
 
+    public Integer getCredits() {
+        return credits;
+    }
+
+    public String getCourseAbstract() {
+        return courseAbstract;
+    }
+
 
     public void setSectionId(Long sectionId) {
         this.sectionId = sectionId;
@@ -82,5 +100,13 @@ public class Course {
 
     public void setQuota(int quota) {
         this.availableQuota = quota;
+    }
+
+    public void setCredits(Integer credits) {
+        this.credits = credits;
+    }
+
+    public void setCourseAbstract(String courseAbstract) {
+        this.courseAbstract = courseAbstract;
     }
 }

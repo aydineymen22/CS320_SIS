@@ -97,10 +97,18 @@ public class StudentController extends HttpServlet {
         StringBuilder sb = new StringBuilder("[");
         for (int i = 0; i < courses.size(); i++) {
             Course c = courses.get(i);
+
             sb.append(String.format(
-                    "{\"sectionId\":%d, \"courseCode\":\"%s\", \"courseName\":\"%s\", \"availableQuota\":%d, \"instructorName\":\"%s\"}",
-                    c.getSectionId(), c.getCourseCode(), c.getCourseName(), c.getAvailableQuota(), c.getInstructorName()
+                    "{\"sectionId\":%s,\"courseCode\":\"%s\",\"courseName\":\"%s\",\"availableQuota\":%d,\"instructorName\":\"%s\",\"credits\":%d,\"courseAbstract\":\"%s\"}",
+                    c.getSectionId(),
+                    c.getCourseCode(),
+                    c.getCourseName(),
+                    c.getAvailableQuota(),
+                    c.getInstructorName(),
+                    c.getCredits(),
+                    c.getCourseAbstract()
             ));
+
             if (i < courses.size() - 1) sb.append(",");
         }
         sb.append("]");

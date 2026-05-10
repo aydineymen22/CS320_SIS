@@ -56,6 +56,22 @@ public class StudentService {
         }
     }
 
+    public List<Course> viewCatalogCourses() {
+        try {
+            return repository.findCatalogCourses("");
+        } catch (SQLException e) {
+            return List.of();
+        }
+    }
+
+    public List<Course> searchCatalogCourses(String query) {
+        try {
+            return repository.findCatalogCourses(query);
+        } catch (SQLException e) {
+            return List.of();
+        }
+    }
+
     public List<Course> searchCourses(String query) {
         try {
             return repository.findCourses(query);
