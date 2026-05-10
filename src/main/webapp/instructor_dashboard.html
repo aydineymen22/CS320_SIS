@@ -12,13 +12,13 @@
         <div class="topbar">
             <div class="page-title">
                 <h1>Instructor Dashboard</h1>
-                <p>View a roster by course ID, update grades, and upload syllabus files.</p>
+                <p>Manage your assigned sections, student rosters, grades, and syllabuses.</p>
             </div>
             <div class="topbar-actions">
                 <div class="profile-chip">
                     <div class="avatar" data-avatar>IU</div>
                     <div>
-                        <div style="font-weight: 700;" data-full-name>Instructor User</div>
+                        <div class="profile-name" data-full-name>Instructor User</div>
                         <div class="muted"><span data-role-label>Instructor</span> • <span data-today></span></div>
                     </div>
                 </div>
@@ -30,46 +30,58 @@
 
         <section class="metrics-grid">
             <article class="metric-card">
-                <div class="metric-label">Selected course</div>
-                <div class="metric-value" id="metric-course-id">-</div>
-                <div class="metric-subtext">Course ID used for instructor actions</div>
+                <div class="metric-label">Selected section</div>
+                <div class="metric-value" id="metric-section-id">-</div>
+                <div class="metric-subtext">Unique backend section identifier</div>
             </article>
             <article class="metric-card">
                 <div class="metric-label">Roster size</div>
                 <div class="metric-value" id="metric-roster-size">0</div>
-                <div class="metric-subtext">Students returned for the selected course</div>
+                <div class="metric-subtext">Students currently returned</div>
             </article>
             <article class="metric-card">
-                <div class="metric-label">Ungraded students</div>
+                <div class="metric-label">Pending grades</div>
                 <div class="metric-value" id="metric-pending-grades">0</div>
-                <div class="metric-subtext">Entries without a letter grade</div>
+                <div class="metric-subtext">Roster rows without grade value</div>
             </article>
             <article class="metric-card">
                 <div class="metric-label">Last action</div>
-                <div class="metric-value" id="metric-last-action">-</div>
-                <div class="metric-subtext">Updated after roster, grade, or upload actions</div>
+                <div class="metric-value metric-value-small" id="metric-last-action">Ready</div>
+                <div class="metric-subtext">Most recent instructor action</div>
             </article>
         </section>
 
         <section class="content-grid">
             <div class="stack">
                 <article class="table-card">
-                    <div class="card-head">Roster Lookup</div>
+                    <div class="card-head">Assigned Sections</div>
                     <div class="card-body">
-                        <div class="quick-actions" style="margin-bottom: 16px; align-items: center; flex-wrap: wrap;">
-                            <input id="roster-course-id" type="number" min="1" class="inline-input" placeholder="Enter course ID">
-                            <button class="action-btn" id="load-roster-btn">Load roster</button>
+                        <div class="field">
+                            <label for="section-select">Choose one of your assigned sections</label>
+                            <select id="section-select"></select>
                         </div>
-                        <table class="data-table">
+                        <div class="stacked-actions">
+                            <button class="action-btn" id="load-roster-btn" type="button">Load roster</button>
+                        </div>
+                        <div id="section-info" class="section-info muted"></div>
+                    </div>
+                </article>
+
+                <article class="table-card">
+                    <div class="card-head">Student Roster</div>
+                    <div class="card-body">
+                        <table class="data-table selectable-table">
                             <thead>
                             <tr>
-                                <th>Student number</th>
+                                <th>Student no</th>
                                 <th>Name</th>
                                 <th>Email</th>
                                 <th>Grade</th>
                             </tr>
                             </thead>
-                            <tbody id="roster-body"></tbody>
+                            <tbody id="roster-body">
+                            <tr><td colspan="4" class="empty-state">Choose a section and load the roster.</td></tr>
+                            </tbody>
                         </table>
                     </div>
                 </article>
@@ -80,43 +92,35 @@
                     <div class="card-head">Grade Entry</div>
                     <div class="card-body">
                         <div class="field">
-                            <label for="grade-course-id">Course ID</label>
-                            <input id="grade-course-id" type="number" min="1" placeholder="Enter course ID">
-                        </div>
-                        <div class="field">
                             <label for="grade-student-id">Student ID</label>
-                            <input id="grade-student-id" type="number" min="1" placeholder="Enter student ID">
+                            <input id="grade-student-id" type="number" placeholder="Enter student ID or click a row">
                         </div>
                         <div class="field">
                             <label for="letter-grade">Letter grade</label>
                             <select id="letter-grade">
-                                <option>AA</option>
-                                <option>BA</option>
-                                <option>BB</option>
-                                <option>CB</option>
-                                <option>CC</option>
-                                <option>DC</option>
-                                <option>DD</option>
-                                <option>FD</option>
-                                <option>FF</option>
+                                <option value="AA">AA</option>
+                                <option value="BA">BA</option>
+                                <option value="BB">BB</option>
+                                <option value="CB">CB</option>
+                                <option value="CC">CC</option>
+                                <option value="DC">DC</option>
+                                <option value="DD">DD</option>
+                                <option value="FD">FD</option>
+                                <option value="FF">FF</option>
                             </select>
                         </div>
-                        <button class="action-btn" style="width: 100%;" id="save-grade-btn">Save grade</button>
+                        <button class="action-btn" id="save-grade-btn" type="button">Save grade</button>
                     </div>
                 </article>
 
                 <article class="notice-card">
-                    <div class="card-head">Syllabus Upload</div>
+                    <div class="card-head">Upload Syllabus</div>
                     <div class="card-body">
                         <div class="field">
-                            <label for="syllabus-course-id">Course ID</label>
-                            <input id="syllabus-course-id" type="number" min="1" placeholder="Enter course ID">
+                            <label for="syllabus-file">Choose syllabus file</label>
+                            <input id="syllabus-file" type="file" accept=".pdf,.doc,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
                         </div>
-                        <div class="field">
-                            <label for="syllabus-file">Syllabus file</label>
-                            <input id="syllabus-file" type="file" accept=".pdf,.doc,.docx">
-                        </div>
-                        <button class="action-btn" style="width: 100%;" id="upload-syllabus-btn">Upload file</button>
+                        <button class="action-btn" id="upload-syllabus-btn" type="button">Upload syllabus</button>
                     </div>
                 </article>
             </div>

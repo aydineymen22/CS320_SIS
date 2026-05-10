@@ -1,17 +1,17 @@
 (function () {
     const messageBox = document.getElementById('instructor-message');
     const rosterBody = document.getElementById('roster-body');
-    const rosterCourseId = document.getElementById('roster-course-id');
-    const gradeCourseId = document.getElementById('grade-course-id');
+    const sectionSelect = document.getElementById('section-select');
+    const sectionInfo = document.getElementById('section-info');
     const gradeStudentId = document.getElementById('grade-student-id');
-    const syllabusCourseId = document.getElementById('syllabus-course-id');
     const syllabusFile = document.getElementById('syllabus-file');
     const loadRosterBtn = document.getElementById('load-roster-btn');
     const saveGradeBtn = document.getElementById('save-grade-btn');
     const uploadBtn = document.getElementById('upload-syllabus-btn');
     const letterGrade = document.getElementById('letter-grade');
 
-    let currentCourseId = null;
+    let assignedSections = [];
+    let currentSectionId = null;
     let currentRoster = [];
 
     document.addEventListener('DOMContentLoaded', async () => {
@@ -20,41 +20,96 @@
             bindEvents();
             renderRoster();
             updateMetrics('Ready');
+            await loadAssignedSections();
         } catch (error) {
             SIS.showMessage(messageBox, error.message, 'error');
         }
     });
 
     function bindEvents() {
-        loadRosterBtn?.addEventListener('click', loadRosterFromInput);
+        loadRosterBtn?.addEventListener('click', loadRosterForSelectedSection);
         saveGradeBtn?.addEventListener('click', saveGrade);
         uploadBtn?.addEventListener('click', uploadSyllabus);
+        sectionSelect?.addEventListener('change', () => {
+            currentSectionId = selectedSectionId();
+            updateSectionInfo();
+            updateMetrics(currentRoster.length ? 'Section changed' : 'Ready');
+        });
     }
 
-    async function loadRosterFromInput() {
-        const courseId = Number(rosterCourseId.value);
-        if (!courseId) {
-            SIS.showMessage(messageBox, 'Enter a course ID first.', 'error');
-            return;
-        }
-        await loadRoster(courseId);
-    }
-
-    async function loadRoster(courseId) {
+    async function loadAssignedSections() {
         try {
-            currentCourseId = courseId;
-            rosterCourseId.value = String(courseId);
-            gradeCourseId.value = String(courseId);
-            syllabusCourseId.value = String(courseId);
-            currentRoster = await SIS.apiGet(`api/instructor?action=viewRoster&courseId=${courseId}`);
-            renderRoster();
-            updateMetrics('Roster loaded');
-            SIS.showMessage(messageBox, currentRoster.length ? 'Roster loaded successfully.' : 'No enrolled students found or access denied for this course.', currentRoster.length ? 'success' : 'info');
+            assignedSections = await SIS.apiGet('api/instructor?action=listAssignedSections');
+            sectionSelect.innerHTML = '';
+
+            if (!assignedSections.length) {
+                sectionSelect.innerHTML = '<option value="">No assigned sections found</option>';
+                sectionSelect.disabled = true;
+                loadRosterBtn.disabled = true;
+                saveGradeBtn.disabled = true;
+                uploadBtn.disabled = true;
+                sectionInfo.textContent = 'You do not have any assigned sections.';
+                updateMetrics('No sections');
+                return;
+            }
+
+            assignedSections.forEach(section => {
+                const option = document.createElement('option');
+                option.value = String(section.sectionId);
+                option.textContent = `${section.courseCode} - ${section.courseName} - Sec ${section.sectionNo} (${section.termName})`;
+                sectionSelect.appendChild(option);
+            });
+
+            currentSectionId = selectedSectionId();
+            updateSectionInfo();
+            updateMetrics('Sections loaded');
         } catch (error) {
             SIS.showMessage(messageBox, error.message, 'error');
+        }
+    }
+
+    function selectedSectionId() {
+        const value = Number(sectionSelect?.value || 0);
+        return value || null;
+    }
+
+    function updateSectionInfo() {
+        const section = assignedSections.find(item => Number(item.sectionId) === Number(currentSectionId));
+        sectionInfo.textContent = section
+            ? `Selected ${section.courseCode} section ${section.sectionNo} for ${section.termName}.`
+            : 'Select one of your assigned sections.';
+        document.getElementById('metric-section-id').textContent = currentSectionId || '-';
+    }
+
+    async function loadRosterForSelectedSection() {
+        const sectionId = selectedSectionId();
+        if (!sectionId) {
+            SIS.showMessage(messageBox, 'Choose an assigned section first.', 'error');
+            return;
+        }
+        await loadRoster(sectionId);
+    }
+
+    async function loadRoster(sectionId, silent = false) {
+        try {
+            currentSectionId = sectionId;
+            currentRoster = await SIS.apiGet(`api/instructor?action=viewRoster&sectionId=${sectionId}`);
+            renderRoster();
+            updateSectionInfo();
+            updateMetrics(silent ? 'Grade saved' : 'Roster loaded');
+
+            if (!silent) {
+                SIS.showMessage(
+                    messageBox,
+                    currentRoster.length ? 'Roster loaded successfully.' : 'No enrolled students found for this section.',
+                    currentRoster.length ? 'success' : 'info'
+                );
+            }
+        } catch (error) {
             currentRoster = [];
             renderRoster();
             updateMetrics('Roster failed');
+            SIS.showMessage(messageBox, error.message, 'error');
         }
     }
 
@@ -81,33 +136,40 @@
     }
 
     async function saveGrade() {
-        const courseId = Number(gradeCourseId.value);
+        const sectionId = selectedSectionId();
         const studentId = Number(gradeStudentId.value);
-        if (!courseId || !studentId) {
-            SIS.showMessage(messageBox, 'Enter both course ID and student ID.', 'error');
+
+        if (!sectionId || !studentId) {
+            SIS.showMessage(messageBox, 'Choose a section and enter a student ID.', 'error');
             return;
         }
 
         try {
             const result = await SIS.apiPost('api/instructor', {
                 action: 'updateGrade',
-                courseId,
+                sectionId,
                 studentId,
                 letterGrade: letterGrade.value
             });
+
             SIS.showMessage(messageBox, result.message, result.success ? 'success' : 'error');
-            await loadRoster(courseId);
-            updateMetrics('Grade saved');
+
+            if (result.success) {
+                await loadRoster(sectionId, true);
+                updateMetrics('Grade saved');
+            } else {
+                updateMetrics('Grade failed');
+            }
         } catch (error) {
-            SIS.showMessage(messageBox, error.message, 'error');
             updateMetrics('Grade failed');
+            SIS.showMessage(messageBox, error.message, 'error');
         }
     }
 
     async function uploadSyllabus() {
-        const courseId = Number(syllabusCourseId.value);
-        if (!courseId) {
-            SIS.showMessage(messageBox, 'Enter a course ID first.', 'error');
+        const sectionId = selectedSectionId();
+        if (!sectionId) {
+            SIS.showMessage(messageBox, 'Choose a section first.', 'error');
             return;
         }
         if (!syllabusFile.files.length) {
@@ -118,20 +180,20 @@
         try {
             const formData = new FormData();
             formData.append('action', 'uploadSyllabus');
-            formData.append('courseId', String(courseId));
+            formData.append('sectionId', String(sectionId));
             formData.append('syllabusFile', syllabusFile.files[0]);
             const result = await SIS.apiPost('api/instructor', formData, true);
             SIS.showMessage(messageBox, result.message, result.success ? 'success' : 'error');
             syllabusFile.value = '';
             updateMetrics('Syllabus uploaded');
         } catch (error) {
-            SIS.showMessage(messageBox, error.message, 'error');
             updateMetrics('Upload failed');
+            SIS.showMessage(messageBox, error.message, 'error');
         }
     }
 
     function updateMetrics(lastAction) {
-        document.getElementById('metric-course-id').textContent = currentCourseId || '-';
+        document.getElementById('metric-section-id').textContent = currentSectionId || '-';
         document.getElementById('metric-roster-size').textContent = currentRoster.length;
         document.getElementById('metric-pending-grades').textContent = currentRoster.filter(item => !item.letterGrade || item.letterGrade === '-').length;
         document.getElementById('metric-last-action').textContent = lastAction || '-';

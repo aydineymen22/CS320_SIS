@@ -54,10 +54,32 @@
         <section class="content-grid">
             <div class="stack">
                 <article class="table-card">
+                    <div class="card-head">Course Catalog</div>
+                    <div class="card-body">
+                        <div class="quick-actions" style="margin-bottom: 16px; align-items: center; flex-wrap: wrap;">
+                            <input id="catalog-search" type="text" placeholder="Search catalog by course code or name" class="inline-input">
+                            <button class="action-btn" id="search-catalog-btn">Search</button>
+                            <button class="secondary-btn" id="reset-catalog-btn">Show all</button>
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Course</th>
+                                <th>Credits</th>
+                                <th>Abstract</th>
+                            </tr>
+                            </thead>
+                            <tbody id="catalog-body"></tbody>
+                        </table>
+                    </div>
+                </article>
+
+                <article class="table-card">
                     <div class="card-head">Offered Courses</div>
                     <div class="card-body">
                         <div class="quick-actions" style="margin-bottom: 16px; align-items: center; flex-wrap: wrap;">
-                            <input id="course-search" type="text" placeholder="Search by course code or name" class="inline-input">
+                            <input id="course-search" type="text" placeholder="Search offered courses by course code or name" class="inline-input">
                             <button class="action-btn" id="search-courses-btn">Search</button>
                             <button class="secondary-btn" id="reset-courses-btn">Show all</button>
                             <button class="action-btn" id="add-course-btn">Enroll</button>
@@ -107,6 +129,7 @@
                             <li><span>Section</span><strong id="detail-section">-</strong></li>
                             <li><span>Term</span><strong id="detail-term">-</strong></li>
                             <li><span>Available quota</span><strong id="detail-quota">-</strong></li>
+                            <li><span>Syllabus</span><strong><a id="detail-syllabus-link" class="detail-link disabled" href="#" target="_blank" rel="noopener">Not available</a></strong></li>
                         </ul>
                     </div>
                 </article>
