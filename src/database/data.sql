@@ -69,7 +69,7 @@ VALUES
 
 INSERT INTO grades (enrollment_id, grade_code)
 VALUES
-(2, 'B');
+(2, 'BB');
 
 INSERT INTO syllabuses (section_id, file_name, file_type, mime_type, file_path)
 VALUES

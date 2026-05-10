@@ -16,7 +16,7 @@ public class StudentRepository {
 
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            String pattern = (query == null ? "" : query) + "%";
+            String pattern = "%" + (query == null ? "" : query.trim()) + "%";
             ps.setString(1, pattern);
             ps.setString(2, pattern);
             ResultSet rs = ps.executeQuery();
@@ -70,6 +70,7 @@ public class StudentRepository {
                 "FROM enrollments e " +
                 "JOIN course_sections s ON e.section_id = s.section_id " +
                 "JOIN course_catalog c ON s.catalog_course_id = c.catalog_course_id " +
+                "JOIN terms t ON s.term_id = t.term_id " +
                 "LEFT JOIN grades g ON e.enrollment_id = g.enrollment_id " +
                 "WHERE e.student_id = ? AND e.status = 'COMPLETED'";
 
@@ -121,5 +122,25 @@ public class StudentRepository {
         return myCourses;
     }
 
-
+    public Course findCourseBySectionId(Long sectionId) throws SQLException {
+        String sql = "SELECT * FROM course_listing_view WHERE section_id = ?";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setLong(1, sectionId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (!rs.next()) {
+                    return null;
+                }
+                return new Course(
+                        rs.getLong("section_id"),
+                        rs.getString("course_code"),
+                        rs.getString("course_name"),
+                        rs.getString("section_no"),
+                        rs.getString("term_name"),
+                        rs.getInt("available_quota"),
+                        rs.getString("instructor_name")
+                );
+            }
+        }
+    }
 }

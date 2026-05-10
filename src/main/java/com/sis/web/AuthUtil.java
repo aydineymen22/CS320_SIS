@@ -21,7 +21,7 @@ public final class AuthUtil {
         if (session == null) return null;
 
         Object sessionRole = session.getAttribute("role");
-        if (!(sessionRole instanceof String) || !role.equals(sessionRole)) {
+        if (!(sessionRole instanceof String) || !role.equalsIgnoreCase((String) sessionRole)) {
             writeError(resp, HttpServletResponse.SC_FORBIDDEN, "Forbidden");
             return null;
         }

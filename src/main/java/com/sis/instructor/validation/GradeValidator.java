@@ -8,7 +8,7 @@ public class GradeValidator {
     private final Set<String> validGradeCodes;
 
     public GradeValidator() {
-        this(Set.of("A", "A-", "B+", "B", "B-", "C+", "C", "C-", "D+", "D"));
+        this(Set.of("AA", "BA", "BB", "CB", "CC", "DC", "DD", "FD", "FF"));
     }
 
     public GradeValidator(Set<String> validGradeCodes) {

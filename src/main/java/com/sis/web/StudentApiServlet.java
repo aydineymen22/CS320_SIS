@@ -7,7 +7,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.List;
 
 @WebServlet("/api/student")
 public class StudentApiServlet extends HttpServlet {
@@ -41,7 +40,7 @@ public class StudentApiServlet extends HttpServlet {
                 AuthUtil.writeError(resp, HttpServletResponse.SC_BAD_REQUEST, "sectionId is required");
                 return;
             }
-            Course course = findCourse(sectionId, studentId);
+            Course course = studentService.viewCourseDetails(sectionId);
             if (course == null) {
                 AuthUtil.writeError(resp, HttpServletResponse.SC_NOT_FOUND, "Course not found");
                 return;
@@ -76,22 +75,6 @@ public class StudentApiServlet extends HttpServlet {
         }
 
         AuthUtil.writeJson(resp, JsonUtil.message(result));
-    }
-
-    private Course findCourse(Long sectionId, Long studentId) {
-        List<Course> offered = studentService.viewAvailableCourses();
-        for (Course course : offered) {
-            if (sectionId.equals(course.getSectionId())) {
-                return course;
-            }
-        }
-        List<Course> schedule = studentService.getMySchedule(studentId);
-        for (Course course : schedule) {
-            if (sectionId.equals(course.getSectionId())) {
-                return course;
-            }
-        }
-        return null;
     }
 
     private Long parseLong(String value) {

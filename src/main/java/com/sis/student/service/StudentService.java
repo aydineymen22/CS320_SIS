@@ -82,4 +82,13 @@ public class StudentService {
             return List.of();
         }
     }
+
+    public Course viewCourseDetails(Long sectionId) {
+        try {
+            return repository.findCourseBySectionId(sectionId);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 }

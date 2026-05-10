@@ -21,6 +21,11 @@ public class SessionServlet extends HttpServlet {
         String role = (String) session.getAttribute("role");
         String name = (String) session.getAttribute("name");
 
-        AuthUtil.writeJson(resp, JsonUtil.session(userId == null ? 0L : userId, role == null ? "" : role, name == null ? "" : name));
+        if (userId == null || role == null || role.isBlank()) {
+            AuthUtil.writeError(resp, HttpServletResponse.SC_UNAUTHORIZED, "Invalid session");
+            return;
+        }
+
+        AuthUtil.writeJson(resp, JsonUtil.session(userId, role, name == null ? "" : name));
     }
 }

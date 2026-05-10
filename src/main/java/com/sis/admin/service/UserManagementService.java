@@ -35,7 +35,8 @@ public class UserManagementService {
 
         try {
             Long newUserId = userRepository.saveUser(normalizedRole, firstName, lastName, email, hashedPassword);
-            return "Success: " + normalizedRole + " account created for " + firstName + " " + lastName + " (User ID: " + newUserId + ").";
+            return "Success: " + normalizedRole + " account created for " + firstName + " " + lastName
+                    + " (User ID: " + newUserId + "). Temporary password: " + tempPassword;
         } catch (SQLException e) {
             return "Database Error: Could not create user. " + e.getMessage();
         }
@@ -60,7 +61,9 @@ public class UserManagementService {
         String newHashedPassword = securityService.hashPassword(newTempPassword);
 
         boolean success = userRepository.updatePassword(userId, newHashedPassword);
-        return success ? "Success: Password reset for User ID " + userId + ". Temporary password generated." : "Error: User ID not found.";
+        return success
+                ? "Success: Password reset for User ID " + userId + ". Temporary password: " + newTempPassword
+                : "Error: User ID not found.";
     }
 
     private boolean isSupportedRole(String role) {

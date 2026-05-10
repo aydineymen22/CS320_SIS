@@ -11,7 +11,10 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 
 @WebServlet("/api/instructor")
@@ -81,14 +84,36 @@ public class InstructorServlet extends HttpServlet {
         }
 
         String originalName = safeFileName(filePart.getSubmittedFileName());
-        File tempFile = File.createTempFile("syllabus-", "-" + originalName);
-        try {
-            Files.copy(filePart.getInputStream(), tempFile.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-            String result = instructorController.uploadSyllabus(instructorId, courseId, tempFile);
+        Path uploadDirectory = resolveUploadDirectory();
+        Files.createDirectories(uploadDirectory);
+
+        String storedName = buildStoredFileName(courseId, originalName);
+        Path storedFile = uploadDirectory.resolve(storedName);
+
+        try (InputStream inputStream = filePart.getInputStream()) {
+            Files.copy(inputStream, storedFile, StandardCopyOption.REPLACE_EXISTING);
+            String result = instructorController.uploadSyllabus(instructorId, courseId, storedFile.toFile());
+            if (!result.toLowerCase().startsWith("success")) {
+                Files.deleteIfExists(storedFile);
+            }
             AuthUtil.writeJson(resp, JsonUtil.message(result));
-        } finally {
-            Files.deleteIfExists(tempFile.toPath());
+        } catch (IOException | RuntimeException e) {
+            Files.deleteIfExists(storedFile);
+            throw e;
         }
+    }
+
+    private Path resolveUploadDirectory() {
+        String realPath = getServletContext().getRealPath("/uploads/syllabuses");
+        if (realPath != null && !realPath.isBlank()) {
+            return Path.of(realPath);
+        }
+        return Path.of(System.getProperty("java.io.tmpdir"), "sis-uploads", "syllabuses");
+    }
+
+    private String buildStoredFileName(Long courseId, String originalName) {
+        String cleanName = safeFileName(originalName).replaceAll("\\s+", "_");
+        return "section-" + courseId + "-" + System.currentTimeMillis() + "-" + cleanName;
     }
 
     private String safeFileName(String fileName) {
